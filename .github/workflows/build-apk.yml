@@ -1,0 +1,93 @@
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+          cache: gradle
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check update/backup token
+        env:
+          T: ${{ secrets.APP_GH_TOKEN }}
+        run: |
+          if [ -z "$T" ]; then echo "::warning::APP_GH_TOKEN secret not set"; exit 0; fi
+          T=$(printf '%s' "$T" | tr -d '[:space:]')
+          for path in user "repos/${{ github.repository }}/releases/latest" "repos/${{ github.repository }}"; do
+            code=$(curl -s -o /tmp/r.json -w '%{http_code}' -H "Authorization: Bearer $T" -H "Accept: application/vnd.github+json" "https://api.github.com/$path")
+            msg=$(grep -o '"message": *"[^"]*"' /tmp/r.json | head -1)
+            echo "Token check $path -> HTTP $code $msg"
+            [ "$code" = "200" ] || echo "::warning::APP_GH_TOKEN check failed for $path: HTTP $code $msg"
+          done
+          exp=$(curl -s -D - -o /dev/null -H "Authorization: Bearer $T" https://api.github.com/user | grep -i 'github-authentication-token-expiration' || true)
+          [ -n "$exp" ] && echo "::notice::$exp" || true
+
+      - name: Build web app and copy into Android project
+        env:
+          VITE_GH_TOKEN: ${{ secrets.APP_GH_TOKEN }}
+        run: |
+          [ -z "$VITE_GH_TOKEN" ] && echo "::warning::APP_GH_TOKEN secret not set; updates and cloud backup are off in this build" || true
+          export VITE_GH_TOKEN=$(printf '%s' "$VITE_GH_TOKEN" | tr -d '[:space:]')
+          npx vite build
+          npx cap sync android
+
+      - name: Build signed APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk ../EchoHub.apk
+
+      - name: Publish web app (iPhone / browser version)
+        env:
+          T: ${{ secrets.APP_GH_TOKEN }}
+        run: |
+          # Separate build WITHOUT the GitHub token: this copy is public.
+          VITE_GH_TOKEN= npx vite build --outDir web-dist --emptyOutDir
+          if grep -rq "github_pat_\|ghp_" web-dist; then echo "::error::token found in web build"; exit 1; fi
+          T=$(printf '%s' "$T" | tr -d '[:space:]')
+          [ -z "$T" ] && { echo "::warning::APP_GH_TOKEN not set; web app not published"; exit 0; }
+          cd web-dist && touch .nojekyll
+          git init -q -b main && git add -A
+          git -c user.name="Echo Hub build" -c user.email="noreply@github.com" commit -qm "Web build ${GITHUB_SHA::7}"
+          git push -qf "https://x-access-token:${T}@github.com/cvassilas/echo-hub-web.git" main \
+            && echo "::notice::Web app published to cvassilas/echo-hub-web" \
+            || echo "::warning::Couldn't publish the web app. Create the public repo cvassilas/echo-hub-web and make sure APP_GH_TOKEN can write to it."
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: EchoHub-apk
+          path: EchoHub.apk
+
+      - name: Publish as latest release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="v1.0.${GITHUB_RUN_NUMBER}"
+          gh release create "$TAG" EchoHub.apk \
+            --title "Echo Hub $TAG" \
+            --notes "Built from ${GITHUB_SHA::7}. On your phone: download EchoHub.apk and open it to install or update." \
+            --latest
