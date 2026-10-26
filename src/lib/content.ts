@@ -292,7 +292,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Don't mistake the coronary sinus for an effusion."],
   },
   {
-    id: "psax_av", name: "PSAX: aortic valve level", group: "Parasternal", diagram: "psax_av", media: [{ src: "psax_av", label: "Loop", marks: [[50, 44, "Ao"], [55, 74, "LA"]], note: "Real study at aortic valve level: aortic root in cross-section with the LA behind it." }],
+    id: "psax_av", name: "PSAX: aortic valve level", group: "Parasternal", diagram: "psax_av", media: [{ src: "psax_av", label: "Loop" }],
     probe: "From PLAX, rotate clockwise 90° and tilt towards the right shoulder.",
     marker: "Towards the left shoulder (about 2 o'clock).",
     structures: ["Aortic valve cusps (right, left, non-coronary): the 'Mercedes sign'", "Left and right atria, interatrial septum", "Tricuspid valve", "RVOT, pulmonary valve and main PA"],
@@ -310,7 +310,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Planimetry above the tips overestimates MVA."],
   },
   {
-    id: "psax_pm", name: "PSAX: papillary muscle level", group: "Parasternal", diagram: "psax_pm", media: [{ src: "psax_pm", label: "Loop", marks: [[57, 48, "LV"]], note: "Real study at mid-ventricular level. This patient has LV hypertrophy, so the walls are thicker than normal." }],
+    id: "psax_pm", name: "PSAX: papillary muscle level", group: "Parasternal", diagram: "psax_pm", media: [{ src: "psax_pm", label: "Loop" }],
     probe: "Tilt further towards the apex until both papillary muscles are seen.",
     marker: "As PSAX.",
     structures: ["Mid LV with anterolateral and posteromedial papillary muscles", "All 3 coronary territories in one view", "RV in cross-section"],
@@ -379,7 +379,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Foreshortened views make the RV look larger than the LV. Don't call RV dilatation from this view alone.", "TAPSE and Doppler are poorly aligned here."],
   },
   {
-    id: "ivc", name: "Subcostal IVC", group: "Subcostal", diagram: "ivc",
+    id: "ivc", name: "Subcostal IVC", group: "Subcostal", diagram: "ivc", media: [{ src: "m_ivc_mmode", label: "IVC M-mode", still: true, note: "M-mode through the IVC from the subcostal window: diameter 2.3 cm measured perpendicular to the vessel. Pair with the sniff response to estimate RAP." }],
     probe: "From subcostal 4C, rotate anticlockwise 90° so the marker points to the head, and aim slightly to the patient's right.",
     marker: "Towards the head (12 o'clock).",
     structures: ["IVC entering the RA", "Hepatic veins draining into the IVC", "Liver"],
@@ -388,7 +388,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Translational movement out of plane looks like collapse.", "Ventilation, raised abdominal pressure and athletes: see the IVC caveat."],
   },
   {
-    id: "ssn", name: "Suprasternal notch", group: "Suprasternal", diagram: "ssn", media: [{ src: "m_ssn_pw", label: "Descending aorta PW", still: true, note: "Real example: PW in the proximal descending aorta from the suprasternal window. Flow continues back towards the probe through diastole (holodiastolic reversal), a sign of severe AR." }],
+    id: "ssn", name: "Suprasternal notch", group: "Suprasternal", diagram: "ssn", media: [{ src: "ssn", label: "Loop" }, { src: "m_ssn_pw", label: "Descending aorta PW", still: true, note: "Real example: PW in the proximal descending aorta from the suprasternal window. Flow continues back towards the probe through diastole (holodiastolic reversal), a sign of severe AR." }],
     probe: "In the suprasternal notch with the neck extended (pillow under the shoulders), beam angled down towards the heart.",
     marker: "Towards the left jaw or ear (about 1 o'clock) for the arch long axis.",
     structures: ["Aortic arch with ascending and descending segments", "Head and neck vessel origins", "Right pulmonary artery in cross-section beneath the arch"],
