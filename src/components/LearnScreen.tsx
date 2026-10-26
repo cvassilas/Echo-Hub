@@ -34,7 +34,7 @@ export const LearnScreen: React.FC = () => {
   );
 
   const ql = q.trim().toLowerCase();
-  const views = VIEWS.filter((v) => !ql || [v.name, ...v.structures, ...v.measure, ...v.optimise, ...v.pitfalls].join(" ").toLowerCase().includes(ql));
+  const views = VIEWS.filter((v) => !ql || [v.name, ...v.structures, ...v.measure, ...v.optimise, ...v.pitfalls, ...(v.fixes || []).flat()].join(" ").toLowerCase().includes(ql));
   const cav = Object.entries(CAVEATS).filter(([, c]) => !ql || [c.title, ...c.points].join(" ").toLowerCase().includes(ql));
   const groups = Array.from(new Set(VIEWS.map((v) => v.group)));
 
@@ -117,6 +117,17 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
     </div>
     <Block title="Structures" items={v.structures} color="#7D8E97" />
     <Block title="Optimise the view" items={v.optimise} color="var(--c-teal)" />
+    {v.fixes?.length ? (
+      <div className={`${card} p-4 space-y-2.5`}>
+        <SectionTitle>Off-axis? How to fix it</SectionTitle>
+        {v.fixes.map(([see, fix], i) => (
+          <div key={i} className="bg-[var(--c-surface2)] rounded-2xl p-3 space-y-1">
+            <p className="text-[13px] font-bold text-[var(--c-text)]">{see}</p>
+            <p className="text-[13px] leading-snug text-[var(--c-text2)]"><span className="font-bold text-[var(--c-teal)]">Fix: </span>{fix}</p>
+          </div>
+        ))}
+      </div>
+    ) : null}
     <Block title="Measure here" items={v.measure} color="#F2B33D" />
     <Block title="Pitfalls" items={v.pitfalls} color="#E05A4F" />
   </div>
