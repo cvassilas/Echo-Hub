@@ -254,11 +254,12 @@ export interface ViewGuide {
   measure: string[];
   pitfalls: string[];
   diagram: string; // id in Diagrams.tsx
+  media?: { src: string; label: string }[]; // real loops in public/views (anonymised, sector only)
 }
 
 export const VIEWS: ViewGuide[] = [
   {
-    id: "plax", name: "Parasternal long axis (PLAX)", group: "Parasternal", diagram: "plax",
+    id: "plax", name: "Parasternal long axis (PLAX)", group: "Parasternal", diagram: "plax", media: [{ src: "plax", label: "Normal PLAX" }], 
     probe: "Left sternal edge, 3rd–4th intercostal space. Patient in left lateral decubitus with the left arm up.",
     marker: "Towards the right shoulder (about 10 o'clock).",
     structures: ["RV outflow (anterior)", "Interventricular septum", "LV cavity and posterior wall", "Aortic root and valve", "Mitral valve", "Left atrium", "Descending aorta (behind the LA)"],
@@ -273,7 +274,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Oblique cut overestimates LV dimensions and wall thickness.", "RV trabeculae or moderator band included in the septum.", "Mistaking a left pleural effusion for a pericardial effusion: pericardial fluid tracks in front of the descending aorta."],
   },
   {
-    id: "rvin", name: "RV inflow", group: "Parasternal", diagram: "plax",
+    id: "rvin", name: "RV inflow", group: "Parasternal", diagram: "plax", media: [{ src: "rvin", label: "RV inflow" }], 
     probe: "From PLAX, tilt the probe tail towards the patient's left shoulder (beam inferomedially).",
     marker: "As PLAX, small rotation clockwise.",
     structures: ["Right atrium", "Tricuspid valve (anterior and posterior leaflets)", "RV inflow", "Coronary sinus and IVC entry"],
@@ -291,7 +292,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["A raphe can make a bicuspid valve look trileaflet in diastole. Check the systolic opening shape (fish-mouth)."],
   },
   {
-    id: "psax_mv", name: "PSAX: mitral valve level", group: "Parasternal", diagram: "psax_mv",
+    id: "psax_mv", name: "PSAX: mitral valve level", group: "Parasternal", diagram: "psax_mv", media: [{ src: "psax_mv", label: "Normal PSAX" }], 
     probe: "From AV level, tilt the probe tail up so the beam points towards the apex.",
     marker: "As PSAX.",
     structures: ["Anterior and posterior mitral leaflets ('fish mouth')", "Basal LV segments", "RV"],
@@ -318,7 +319,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Near-field clutter can mimic thrombus. Use a higher frequency or contrast."],
   },
   {
-    id: "a4c", name: "Apical four chamber (A4C)", group: "Apical", diagram: "a4c",
+    id: "a4c", name: "Apical four chamber (A4C)", group: "Apical", diagram: "a4c", media: [{ src: "a4c", label: "Normal A4C" }, { src: "a4c_rv", label: "RV-focused A4C" }], 
     probe: "At the apex beat (often 5th intercostal space, anterior or mid-axillary line). Patient in steep left lateral position.",
     marker: "Towards the patient's left (about 3 o'clock). UK and US conventions differ in screen orientation; follow your machine's.",
     structures: ["LV, RV, LA, RA", "Mitral and tricuspid valves", "Interventricular and interatrial septa", "Pulmonary veins entering the LA"],
@@ -333,7 +334,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Foreshortening underestimates volumes and makes the apex look hypokinetic or normal when it isn't.", "Dropout of the lateral wall: rotate slightly or use contrast.", "RV size varies a lot with probe rotation."],
   },
   {
-    id: "a5c", name: "Apical five chamber (A5C)", group: "Apical", diagram: "a5c",
+    id: "a5c", name: "Apical five chamber (A5C)", group: "Apical", diagram: "a5c", media: [{ src: "a5c", label: "Normal A5C" }], 
     probe: "From A4C, tilt the probe tail down (beam angled anteriorly) until the LVOT and aortic valve appear.",
     marker: "As A4C.",
     structures: ["LVOT and aortic valve between the four chambers"],
@@ -342,7 +343,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Sample volume too close to the valve gives AV velocities in the 'LVOT' trace.", "Poor alignment underestimates VTI and AS gradients."],
   },
   {
-    id: "a2c", name: "Apical two chamber (A2C)", group: "Apical", diagram: "a2c",
+    id: "a2c", name: "Apical two chamber (A2C)", group: "Apical", diagram: "a2c", media: [{ src: "a2c", label: "Normal A2C" }], 
     probe: "From A4C, rotate anticlockwise about 60° until the RV disappears.",
     marker: "Towards the left neck (about 12–1 o'clock).",
     structures: ["LV anterior (right of screen) and inferior (left) walls", "LA and LA appendage", "Mitral valve"],
@@ -351,7 +352,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Under-rotation leaves part of the RV in view and overestimates volumes."],
   },
   {
-    id: "a3c", name: "Apical three chamber (A3C, apical long axis)", group: "Apical", diagram: "a5c",
+    id: "a3c", name: "Apical three chamber (A3C, apical long axis)", group: "Apical", diagram: "a5c", media: [{ src: "a3c", label: "Normal A3C" }], 
     probe: "From A2C, rotate anticlockwise a further 60° until the LVOT and aortic valve appear.",
     marker: "Towards the right shoulder (about 10–11 o'clock).",
     structures: ["LV anteroseptal and inferolateral walls", "LVOT and aortic valve", "Mitral valve and LA"],
@@ -360,7 +361,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Foreshortening is common; slide laterally to find the true apex."],
   },
   {
-    id: "sc4c", name: "Subcostal four chamber", group: "Subcostal", diagram: "sc4c",
+    id: "sc4c", name: "Subcostal four chamber", group: "Subcostal", diagram: "sc4c", media: [{ src: "sc4c", label: "Subcostal 4C" }], 
     probe: "Just below the xiphisternum, probe held from above and nearly flat on the abdomen, beam towards the left shoulder. Bend the patient's knees to relax the abdomen.",
     marker: "Towards the patient's left (about 3 o'clock).",
     structures: ["Liver (near field)", "RV free wall and RA (closest)", "LV, LA", "Interatrial septum (perpendicular to the beam: best view for ASD)", "Pericardium"],

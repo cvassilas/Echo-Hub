@@ -102,7 +102,7 @@ export const CalcScreen: React.FC = () => {
                     </div>
                   ))}
                 </div>
-                <div className="bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl p-3 space-y-1.5">
+                <div className="bg-[var(--c-surface2)] rounded-2xl p-3 space-y-1.5">
                   {outs.map((o) => (
                     <div key={o.label}>
                       <div className="flex items-center justify-between gap-2 text-sm">

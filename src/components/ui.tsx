@@ -3,8 +3,8 @@ import { Info } from "lucide-react";
 import { Grade, Level } from "../lib/echo";
 import { CAVEATS } from "../lib/content";
 
-export const card = "bg-[var(--c-surface)] border border-[var(--c-border)] rounded-2xl";
-export const inputCls = "w-full bg-[var(--c-bg)] text-[var(--c-text)] placeholder-[var(--c-muted)]/60 border border-[var(--c-border)] focus:border-[var(--c-teal)] rounded-xl px-3 py-2 text-sm outline-none [color-scheme:var(--c-scheme)]";
+export const card = "bg-[var(--c-surface)] rounded-[24px]";
+export const inputCls = "w-full bg-[var(--c-surface2)] text-[var(--c-text)] placeholder-[var(--c-muted)] border-0 border-b-2 border-[var(--c-border2)] focus:border-[var(--c-teal)] rounded-t-xl rounded-b-none px-3.5 py-2.5 text-[15px] outline-none transition-colors [color-scheme:var(--c-scheme)]";
 export const labelCls = "block text-[11px] font-semibold text-[var(--c-muted)] mb-1";
 
 export const LEVEL_COLOR: Record<Level, string> = {
@@ -13,7 +13,7 @@ export const LEVEL_COLOR: Record<Level, string> = {
 
 export const GradeBadge: React.FC<{ g: Grade | null | undefined; small?: boolean }> = ({ g, small }) =>
   g ? (
-    <span className={`inline-flex items-center rounded-full font-bold leading-tight ${small ? "text-[9.5px] px-1.5 py-0.5" : "text-[10.5px] px-2 py-0.5"}`}
+    <span className={`inline-flex items-center rounded-lg font-bold leading-tight ${small ? "text-[10.5px] px-2 py-0.5" : "text-[11.5px] px-2.5 py-1"}`}
       style={{ color: LEVEL_COLOR[g.level], background: `color-mix(in srgb, ${LEVEL_COLOR[g.level]} 14%, transparent)` }}>
       {g.text}
     </span>
@@ -21,11 +21,11 @@ export const GradeBadge: React.FC<{ g: Grade | null | undefined; small?: boolean
 
 export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; children: React.ReactNode }> = ({ onClose, title, children }) => (
   <div className="fixed inset-0 z-[60] bg-black/60 flex items-end justify-center" onClick={onClose}>
-    <div className="bg-[var(--c-surface)] w-full max-w-md rounded-t-3xl max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
-      <div className="flex items-center justify-between px-4 pt-4 pb-3 border-b border-[var(--c-border)]">
-        <div className="text-base font-bold text-[var(--c-text)] min-w-0">{title}</div>
-        <button type="button" onClick={onClose} aria-label="Close" className="text-[var(--c-muted)] text-xl px-2">✕</button>
-      </div>
+    <div className="bg-[var(--c-surface)] w-full max-w-md rounded-t-[28px] max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+      <div className="flex flex-col items-center px-4 pt-2.5 pb-2"><span className="w-8 h-1 rounded-full bg-[var(--c-border2)] opacity-60 mb-2" /><div className="w-full flex items-center justify-between">
+        <div className="text-[22px] leading-7 text-[var(--c-text)] min-w-0">{title}</div>
+        <button type="button" onClick={onClose} aria-label="Close" className="m3-press w-10 h-10 rounded-full text-[var(--c-text2)] text-lg">✕</button>
+      </div></div>
       <div className="overflow-y-auto p-4 pb-8 space-y-4">{children}</div>
     </div>
   </div>
@@ -59,5 +59,5 @@ export const Bullets: React.FC<{ items: string[]; color?: string }> = ({ items, 
 );
 
 export const SectionTitle: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <h2 className="text-xs font-bold text-[var(--c-text)] uppercase tracking-wider">{children}</h2>
+  <h2 className="text-[14px] font-bold text-[var(--c-teal)] tracking-[0.01em]">{children}</h2>
 );

@@ -31,8 +31,8 @@ export const AppsCard: React.FC = () => {
       <div className="grid grid-cols-4 gap-2">
         {settings.apps.map((a) => (
           <button key={a.packageName} type="button" onClick={() => AppLauncher.open({ packageName: a.packageName }).catch((e) => setErr(e?.message || "Couldn't open it"))}
-            className="flex flex-col items-center gap-1 p-1.5 rounded-xl bg-[var(--c-bg)] border border-[var(--c-border)]">
-            {icons[a.packageName] ? <img src={icons[a.packageName]} alt="" className="w-11 h-11 rounded-xl" /> : <span className="w-11 h-11 rounded-xl bg-[var(--c-surface2)] flex items-center justify-center"><ExternalLink className="w-4 h-4 text-[var(--c-muted)]" /></span>}
+            className="m3-press flex flex-col items-center gap-1 p-2 rounded-2xl bg-[var(--c-surface2)]">
+            {icons[a.packageName] ? <img src={icons[a.packageName]} alt="" className="w-12 h-12 rounded-2xl" /> : <span className="w-11 h-11 rounded-xl bg-[var(--c-surface2)] flex items-center justify-center"><ExternalLink className="w-4 h-4 text-[var(--c-muted)]" /></span>}
             <span className="text-[10px] font-semibold text-[var(--c-text)] text-center leading-tight line-clamp-2">{a.label}</span>
           </button>
         ))}
@@ -67,7 +67,7 @@ const AppPicker: React.FC<{ onClose: () => void }> = ({ onClose }) => {
       {apps && list.length === 0 && <p className="text-xs text-[var(--c-muted)]">No match. Try part of the name, e.g. "calc" or "ASE".</p>}
       <div className="space-y-1.5">
         {list.map((a) => (
-          <button key={a.packageName} type="button" onClick={() => toggle(a)} className="w-full flex items-center justify-between gap-2 bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl px-3 py-2.5 text-left">
+          <button key={a.packageName} type="button" onClick={() => toggle(a)} className="w-full flex items-center justify-between gap-2 bg-[var(--c-surface2)] rounded-2xl px-3 py-2.5 text-left">
             <span className="min-w-0"><span className="block text-sm font-semibold text-[var(--c-text)] truncate">{a.label}</span><span className="block text-[10px] text-[var(--c-muted)] truncate">{a.packageName}</span></span>
             {chosen.has(a.packageName) ? <Check className="w-5 h-5 text-[var(--c-teal)] shrink-0" /> : <Plus className="w-5 h-5 text-[var(--c-muted)] shrink-0" />}
           </button>
@@ -91,7 +91,7 @@ export const MoreScreen: React.FC = () => {
         <div className="grid grid-cols-2 gap-2">
           {([["dark", "Dark", Moon], ["light", "Light", Sun]] as const).map(([v, l, Icon]) => (
             <button key={v} type="button" onClick={() => updateSettings({ theme: v })}
-              className={`flex items-center justify-center gap-2 py-3 rounded-xl border text-xs font-bold ${settings.theme === v ? "border-[var(--c-teal)] bg-[var(--c-teal)]/15 text-[var(--c-teal)]" : "border-[var(--c-border)] text-[var(--c-muted)]"}`}>
+              className={`flex items-center justify-center gap-2 py-3 rounded-full border text-xs font-bold m3-press ${settings.theme === v ? "border-transparent bg-[var(--c-tonal)] text-[var(--c-on-tonal)]" : "border-[var(--c-border2)] text-[var(--c-text2)]"}`}>
               <Icon className="w-4 h-4" /> {l}
             </button>
           ))}
@@ -102,9 +102,9 @@ export const MoreScreen: React.FC = () => {
           <SectionTitle>Updates</SectionTitle>
           <div className="flex justify-between text-xs"><span className="text-[var(--c-muted)]">Installed version</span><span className="font-semibold text-[var(--c-text)]">{version || "–"}</span></div>
           {updatesEnabled() ? (upd ? (
-            <button type="button" onClick={() => installUpdate(upd).catch((e) => setMsg(e?.message))} className="w-full py-2.5 rounded-xl bg-[var(--c-accent)] text-[var(--c-bg)] text-xs font-bold">Install {upd.latest}</button>
+            <button type="button" onClick={() => installUpdate(upd).catch((e) => setMsg(e?.message))} className="w-full py-2.5 rounded-full bg-[var(--c-teal)] text-[var(--c-on-primary)] m3-press text-xs font-bold">Install {upd.latest}</button>
           ) : (
-            <button type="button" onClick={async () => { setMsg(null); try { const u = await checkForUpdate(true); setUpd(u); if (!u) setMsg("You're on the latest version."); } catch (e: any) { setMsg(e?.message || "Couldn't check."); } }} className="w-full py-2.5 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-xs font-bold">Check for updates</button>
+            <button type="button" onClick={async () => { setMsg(null); try { const u = await checkForUpdate(true); setUpd(u); if (!u) setMsg("You're on the latest version."); } catch (e: any) { setMsg(e?.message || "Couldn't check."); } }} className="w-full py-2.5 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold">Check for updates</button>
           )) : <p className="text-[11px] text-[var(--c-muted)]">Off in this build. Add the APP_GH_TOKEN secret to the Echo-Hub repo and rebuild.</p>}
           {msg && <p className="text-[11px] text-[var(--c-muted)]">{msg}</p>}
         </div>

@@ -27,10 +27,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[var(--c-bg)] text-[var(--c-text)] font-sans">
-      <main className="w-full max-w-md mx-auto px-4 pt-4 pb-28 space-y-3">
-        <header className="pt-1">
-          <h1 className="text-2xl font-bold tracking-tight">{TITLES[tab]}</h1>
-          <p className="text-xs text-[var(--c-muted)]">Echo Hub</p>
+      <main className="w-full max-w-md mx-auto px-4 pt-4 pb-32 space-y-3">
+        <header className="pt-3 pb-1 px-1">
+          <p className="text-[13px] font-semibold text-[var(--c-teal)]">Echo Hub</p>
+          <h1 className="text-[30px] leading-9 font-normal text-[var(--c-text)]">{TITLES[tab]}</h1>
         </header>
         {tab === "report" && <ReportScreen />}
         {tab === "calc" && <CalcScreen />}
@@ -40,21 +40,26 @@ export default function App() {
       </main>
 
       {update && (
-        <div className="fixed left-3 right-3 bottom-[84px] z-50 bg-[var(--c-surface2)] border border-[var(--c-accent)]/60 rounded-2xl p-3 shadow-2xl flex items-center gap-2 max-w-md mx-auto">
+        <div className="fixed left-3 right-3 bottom-[96px] z-50 bg-[var(--c-surface3)] rounded-2xl p-3 shadow-2xl flex items-center gap-2 max-w-md mx-auto">
           <span className="flex-1 text-xs font-bold">Update {update.latest} available</span>
           <button type="button" onClick={() => installUpdate(update).catch(() => {})} className="bg-[var(--c-accent)] text-[var(--c-bg)] text-xs font-bold rounded-xl px-3 py-2">Install</button>
           <button type="button" onClick={() => setUpdate(null)} aria-label="Dismiss" className="text-[var(--c-muted)] px-1">✕</button>
         </div>
       )}
 
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[var(--c-surface)] border-t border-[var(--c-border)] z-50 pb-[env(safe-area-inset-bottom)]">
-        <div className="flex justify-around h-16">
-          {tabs.map(([t, label, Icon]) => (
-            <button key={t} type="button" onClick={() => setTab(t)} className={`flex-1 flex flex-col items-center justify-center gap-0.5 ${tab === t ? "text-[var(--c-teal)]" : "text-[var(--c-muted)]"}`}>
-              <Icon className="w-5 h-5" />
-              <span className="text-[10.5px] font-semibold">{label}</span>
-            </button>
-          ))}
+      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[var(--c-surface)] z-50 pb-[env(safe-area-inset-bottom)]">
+        <div className="flex justify-around h-20 pt-3">
+          {tabs.map(([t, label, Icon]) => {
+            const on = tab === t;
+            return (
+              <button key={t} type="button" onClick={() => setTab(t)} className="flex-1 flex flex-col items-center gap-1">
+                <span className={`m3-press w-16 h-8 rounded-full flex items-center justify-center transition-colors ${on ? "bg-[var(--c-tonal)] text-[var(--c-on-tonal)]" : "text-[var(--c-text2)]"}`}>
+                  <Icon className="w-6 h-6" strokeWidth={on ? 2.2 : 1.8} />
+                </span>
+                <span className={`text-[12.5px] ${on ? "font-bold text-[var(--c-text)]" : "font-semibold text-[var(--c-text2)]"}`}>{label}</span>
+              </button>
+            );
+          })}
         </div>
       </nav>
     </div>

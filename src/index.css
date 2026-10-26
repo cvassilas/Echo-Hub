@@ -4,40 +4,56 @@
   --font-sans: "Carlito", Calibri, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* Theme tokens. Dark is the original look; light is the clean grey/white style. */
+/* Material 3 colour roles (teal seed). --c-* names kept so components stay simple:
+   bg = surface, surface = surface-container, surface2 = surface-container-highest,
+   teal = primary, accent = tertiary, tonal = secondary-container. */
 :root {
-  --c-bg: #10161B;
-  --c-surface: #1A2329;
-  --c-surface2: #202C34;
-  --c-border: #2C3941;
-  --c-border2: #3A4A54;
-  --c-text: #E9EDEF;
-  --c-text2: #C5D1D7;
-  --c-muted: #8CA0AA;
-  --c-accent: #D9A441;
-  --c-accent-hover: #C29135;
-  --c-teal: #4FA8A0;
-  --c-teal-hover: #5FB8B0;
-  --c-blue: #3B82F6;
+  --c-bg: #0E1415;
+  --c-surface: #1A2122;
+  --c-surface2: #252B2C;
+  --c-surface3: #303637;
+  --c-border: #3F4849;
+  --c-border2: #6F797A;
+  --c-text: #DEE3E4;
+  --c-text2: #BFC8C9;
+  --c-muted: #899294;
+  --c-teal: #82D3DE;
+  --c-teal-hover: #9EEFFB;
+  --c-on-primary: #00363C;
+  --c-primary-container: #004F57;
+  --c-on-primary-container: #9EEFFB;
+  --c-tonal: #324B4F;
+  --c-on-tonal: #CDE7EB;
+  --c-accent: #F4BD6F;
+  --c-accent-hover: #FFDDB3;
+  --c-on-accent: #452B00;
+  --c-blue: #A6C8FF;
   --c-on-strong: #FFFFFF;
   --c-scheme: dark;
   color-scheme: dark;
 }
 html.theme-light {
-  --c-bg: #F1F3F5;
-  --c-surface: #FFFFFF;
-  --c-surface2: #EEF1F3;
-  --c-border: #DDE2E6;
-  --c-border2: #C9D0D5;
-  --c-text: #1D252B;
-  --c-text2: #3B4750;
-  --c-muted: #66737C;
-  --c-accent: #37474F;
-  --c-accent-hover: #263238;
-  --c-teal: #00897B;
-  --c-teal-hover: #00796B;
-  --c-blue: #3949AB;
-  --c-on-strong: #1D252B;
+  --c-bg: #F5FAFB;
+  --c-surface: #EAEFF0;
+  --c-surface2: #DEE3E4;
+  --c-surface3: #D3D9DA;
+  --c-border: #BFC8C9;
+  --c-border2: #6F797A;
+  --c-text: #171D1E;
+  --c-text2: #3F4849;
+  --c-muted: #5D6667;
+  --c-teal: #006874;
+  --c-teal-hover: #004F57;
+  --c-on-primary: #FFFFFF;
+  --c-primary-container: #9EEFFB;
+  --c-on-primary-container: #001F23;
+  --c-tonal: #CDE7EB;
+  --c-on-tonal: #051F23;
+  --c-accent: #7C5800;
+  --c-accent-hover: #5E4200;
+  --c-on-accent: #FFFFFF;
+  --c-blue: #3B5BA9;
+  --c-on-strong: #171D1E;
   --c-scheme: light;
   color-scheme: light;
 }
@@ -97,3 +113,11 @@ html.theme-light .shadow-lg, html.theme-light .shadow-xl, html.theme-light .shad
   background: #4FA8A0;
 }
 
+
+/* Material 3 touch feedback: a state layer on press */
+@layer components {
+  .m3-press { position: relative; overflow: hidden; }
+  .m3-press::after { content: ""; position: absolute; inset: 0; background: currentColor; opacity: 0; transition: opacity 120ms; pointer-events: none; }
+  .m3-press:active::after { opacity: 0.12; }
+}
+button { -webkit-tap-highlight-color: transparent; }

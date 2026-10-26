@@ -47,7 +47,7 @@ export const LearnScreen: React.FC = () => {
           <SectionTitle>Concepts</SectionTitle>
           <div className="grid grid-cols-2 gap-2 mt-2">
             {CONCEPTS.map((c) => (
-              <button key={c} type="button" onClick={() => setConcept(c)} className="text-left bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl p-2">
+              <button key={c} type="button" onClick={() => setConcept(c)} className="text-left bg-[var(--c-surface2)] rounded-2xl p-2">
                 <div className="pointer-events-none"><Diagram id={c} /></div>
                 <span className="block text-xs font-bold text-[var(--c-text)] mt-1.5">{DIAGRAMS[c].title}</span>
               </button>
@@ -63,8 +63,8 @@ export const LearnScreen: React.FC = () => {
           <div key={gname} className={`${card} p-3 space-y-1.5`}>
             <SectionTitle>{gname} views</SectionTitle>
             {list.map((v) => (
-              <button key={v.id} type="button" onClick={() => setView(v)} className="w-full flex items-center gap-3 text-left bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl p-2">
-                <div className="w-20 shrink-0 pointer-events-none"><Diagram id={v.diagram} /></div>
+              <button key={v.id} type="button" onClick={() => setView(v)} className="w-full flex items-center gap-3 text-left bg-[var(--c-surface2)] rounded-2xl p-2">
+                <div className="w-20 shrink-0 pointer-events-none">{v.media?.length ? <img src={`./views/${v.media[0].src}.jpg`} alt="" className="w-full aspect-square object-cover rounded-xl bg-black" /> : <Diagram id={v.diagram} />}</div>
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-bold text-[var(--c-text)]">{v.name}</span>
                   <span className="block text-[11px] text-[var(--c-muted)] line-clamp-2">{v.measure.slice(0, 3).join(" · ")}</span>
@@ -80,14 +80,14 @@ export const LearnScreen: React.FC = () => {
         <div className={`${card} p-3 space-y-1.5`}>
           <SectionTitle>Measurement caveats</SectionTitle>
           {cav.map(([id, c]) => (
-            <button key={id} type="button" onClick={() => setCaveat(id)} className="w-full flex items-center justify-between text-left bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl px-3 py-2.5">
+            <button key={id} type="button" onClick={() => setCaveat(id)} className="w-full flex items-center justify-between text-left bg-[var(--c-surface2)] rounded-2xl px-3 py-2.5">
               <span className="text-[13px] font-semibold text-[var(--c-text)]">{c.title}</span>
               <ChevronRight className="w-4 h-4 text-[var(--c-muted)] shrink-0" />
             </button>
           ))}
         </div>
       )}
-      <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Diagrams are schematic and not to scale. Teaching notes are written for this app; check against current BSE/ASE guidance.</p>
+      <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Loops are from real anonymised normal studies; diagrams are schematic and not to scale. Teaching notes are written for this app; check against current BSE/ASE guidance.</p>
     </div>
   );
 };
@@ -100,7 +100,7 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
   <div className="space-y-3">
     <BackBar onBack={onBack} title="All views" />
     <h2 className="text-lg font-bold text-[var(--c-text)]">{v.name}</h2>
-    <div className={`${card} p-3`}><Diagram id={v.diagram} /></div>
+    <ViewMedia v={v} />
     <div className={`${card} p-4 space-y-2`}>
       <p className="text-[13px] text-[var(--c-text2)]"><b className="text-[var(--c-text)]">Probe: </b>{v.probe}</p>
       <p className="text-[13px] text-[var(--c-text2)]"><b className="text-[var(--c-text)]">Marker: </b>{v.marker}</p>
@@ -111,6 +111,33 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
     <Block title="Pitfalls" items={v.pitfalls} color="#E05A4F" />
   </div>
 );
+
+const ViewMedia: React.FC<{ v: ViewGuide }> = ({ v }) => {
+  const opts = [...(v.media || []).map((m) => ({ key: m.src, label: m.label })), { key: "diagram", label: "Labelled" }];
+  const [sel, setSel] = useState(opts[0].key);
+  const m = v.media?.find((x) => x.src === sel);
+  return (
+    <div className={`${card} p-3 space-y-2.5`}>
+      {opts.length > 1 && (
+        <div className="flex gap-2 overflow-x-auto">
+          {opts.map((o) => (
+            <button key={o.key} type="button" onClick={() => setSel(o.key)}
+              className={`m3-press shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-bold border ${sel === o.key ? "bg-[var(--c-tonal)] text-[var(--c-on-tonal)] border-transparent" : "border-[var(--c-border2)] text-[var(--c-text2)]"}`}>
+              {sel === o.key ? "✓ " : ""}{o.label}
+            </button>
+          ))}
+        </div>
+      )}
+      {m ? (
+        <>
+          <video key={m.src} src={`./views/${m.src}.mp4`} poster={`./views/${m.src}.jpg`} autoPlay muted loop playsInline
+            className="w-full rounded-2xl bg-black" aria-label={m.label} />
+          <p className="text-[11px] text-[var(--c-muted)]">Real normal study, anonymised: cropped to the sector with all on-screen text removed. Tap "Labelled" for the annotated diagram.</p>
+        </>
+      ) : <Diagram id={v.diagram} />}
+    </div>
+  );
+};
 
 const Block: React.FC<{ title: string; items: string[]; color: string }> = ({ title, items, color }) => (
   <div className={`${card} p-4 space-y-2`}>

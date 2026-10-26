@@ -37,13 +37,13 @@ export const ReportScreen: React.FC = () => {
       <div className={`${card} p-3 space-y-2`}>
         <div className="flex gap-2">
           <input aria-label="Study label" value={draft.label} onChange={(e) => setDraft({ label: e.target.value })} placeholder="Label, e.g. ICU bed 4 (no names)" className={inputCls} />
-          <button type="button" aria-label="Saved reports" onClick={() => setShowSaved(true)} className="px-3 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] flex items-center gap-1 text-xs font-bold"><FolderOpen className="w-4 h-4" />{reports.length}</button>
+          <button type="button" aria-label="Saved reports" onClick={() => setShowSaved(true)} className="px-3 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press flex items-center gap-1 text-xs font-bold"><FolderOpen className="w-4 h-4" />{reports.length}</button>
         </div>
         <div className="flex gap-2">
-          <button type="button" onClick={() => { saveDraftAsReport(); setSavedMsg(true); setTimeout(() => setSavedMsg(false), 1500); }} disabled={!filled} className="flex-1 py-2 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40">
+          <button type="button" onClick={() => { saveDraftAsReport(); setSavedMsg(true); setTimeout(() => setSavedMsg(false), 1500); }} disabled={!filled} className="flex-1 py-2 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5 disabled:opacity-40">
             {savedMsg ? <><Check className="w-4 h-4" /> Saved</> : <><Save className="w-4 h-4" /> Save</>}
           </button>
-          <button type="button" onClick={() => { if (!filled || confirm("Start a new study? Unsaved entries will be cleared.")) newDraft(); }} className="flex-1 py-2 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-xs font-bold flex items-center justify-center gap-1.5"><FilePlus2 className="w-4 h-4" /> New</button>
+          <button type="button" onClick={() => { if (!filled || confirm("Start a new study? Unsaved entries will be cleared.")) newDraft(); }} className="flex-1 py-2 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><FilePlus2 className="w-4 h-4" /> New</button>
         </div>
       </div>
 
@@ -58,7 +58,7 @@ export const ReportScreen: React.FC = () => {
         return (
           <div key={s.id} className={card}>
             <button type="button" onClick={() => setOpen({ ...open, [s.id]: !isOpen })} className="w-full flex items-center justify-between px-4 py-3">
-              <span className="flex items-center gap-2 text-sm font-bold text-[var(--c-text)]">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}{s.title}</span>
+              <span className="flex items-center gap-2 text-[16px] font-bold text-[var(--c-text)]">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}{s.title}</span>
               <span className="flex items-center gap-1.5 text-[10.5px] text-[var(--c-muted)]">
                 {abn > 0 && <span className="w-2 h-2 rounded-full" style={{ background: LEVEL_COLOR.moderate }} />}
                 {count > 0 && `${count} entered`}
@@ -75,7 +75,7 @@ export const ReportScreen: React.FC = () => {
                   </button>
                 )}
                 {derived.length > 0 && (
-                  <div className="bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl p-2.5 space-y-1">
+                  <div className="bg-[var(--c-surface2)] rounded-2xl p-2.5 space-y-1">
                     <p className="text-[10px] font-bold uppercase tracking-wider text-[var(--c-muted)]">Calculated</p>
                     {derived.map((k) => {
                       const [label, u, dp] = DERIVED_LABELS[k]!;
@@ -91,13 +91,13 @@ export const ReportScreen: React.FC = () => {
                   </div>
                 )}
                 {s.id === "tv" && ph.probability !== "Not assessable" && (
-                  <div className="rounded-xl p-2.5 text-xs" style={{ background: `color-mix(in srgb, ${LEVEL_COLOR[ph.probability === "High" ? "severe" : ph.probability === "Intermediate" ? "moderate" : "normal"]} 12%, transparent)` }}>
+                  <div className="rounded-2xl p-3 text-xs" style={{ background: `color-mix(in srgb, ${LEVEL_COLOR[ph.probability === "High" ? "severe" : ph.probability === "Intermediate" ? "moderate" : "normal"]} 12%, transparent)` }}>
                     <b className="text-[var(--c-text)]">PH probability: {ph.probability}</b>
                     <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ph.reason}</p>
                   </div>
                 )}
                 {s.id === "mv" && (num(v, "e") !== undefined || ds.graded) && (
-                  <div className="rounded-xl p-2.5 text-xs bg-[var(--c-bg)] border border-[var(--c-border)]">
+                  <div className="rounded-2xl p-3 text-xs bg-[var(--c-surface2)]">
                     <b className="text-[var(--c-text)]">{ds.conclusion}</b>
                     {ds.detail && <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ds.detail}</p>}
                   </div>
@@ -108,7 +108,7 @@ export const ReportScreen: React.FC = () => {
         );
       })}
 
-      <button type="button" disabled={!filled} onClick={() => setShowReport(true)} className="w-full py-3.5 rounded-2xl bg-[var(--c-accent)] text-[var(--c-bg)] font-bold flex items-center justify-center gap-2 disabled:opacity-40">
+      <button type="button" disabled={!filled} onClick={() => setShowReport(true)} className="w-full py-3.5 rounded-2xl bg-[var(--c-primary-container)] text-[var(--c-on-primary-container)] shadow-lg m3-press font-bold flex items-center justify-center gap-2 disabled:opacity-40">
         <FileText className="w-5 h-5" /> Generate report
       </button>
       <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Grading follows BSE/ASE/EACVI/ESC thresholds. Always apply clinical judgement and check against the current guidelines.</p>
@@ -123,7 +123,7 @@ export const ReportScreen: React.FC = () => {
         <Sheet title="Saved reports" onClose={() => setShowSaved(false)}>
           {reports.length === 0 && <p className="text-xs text-[var(--c-muted)]">Nothing saved yet. Reports stay on this phone.</p>}
           {reports.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 bg-[var(--c-bg)] border border-[var(--c-border)] rounded-xl px-3 py-2.5">
+            <div key={r.id} className="flex items-center gap-2 bg-[var(--c-surface2)] rounded-2xl px-3 py-2.5">
               <button type="button" className="flex-1 text-left min-w-0" onClick={() => { openReport(r.id); setShowSaved(false); }}>
                 <span className="block text-sm font-bold text-[var(--c-text)] truncate">{r.label}</span>
                 <span className="block text-[10.5px] text-[var(--c-muted)]">{new Date(r.updated).toLocaleString("en-GB", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</span>
@@ -191,12 +191,12 @@ const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   return (
     <Sheet title="Report" onClose={onClose}>
       <textarea aria-label="Report text" value={text} onChange={(e) => setDraft({ text: e.target.value })} rows={22}
-        className="w-full bg-[var(--c-bg)] text-[var(--c-text)] border border-[var(--c-border)] rounded-xl p-3 text-[12.5px] leading-relaxed font-mono outline-none focus:border-[var(--c-teal)]" />
+        className="w-full bg-[var(--c-surface2)] text-[var(--c-text)] rounded-2xl p-3 text-[12.5px] leading-relaxed font-mono outline-none focus:border-[var(--c-teal)]" />
       {draft.text !== undefined && <button type="button" onClick={() => setDraft({ text: undefined })} className="text-[11px] font-bold text-[var(--c-teal)]">Discard my edits and regenerate</button>}
       <div className="grid grid-cols-3 gap-2">
-        <button type="button" onClick={copy} className="py-2.5 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-xs font-bold flex items-center justify-center gap-1.5">{copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy</>}</button>
-        <button type="button" onClick={share} className="py-2.5 rounded-xl border border-[var(--c-border)] text-[var(--c-text)] text-xs font-bold flex items-center justify-center gap-1.5"><Share2 className="w-4 h-4" /> Share</button>
-        <button type="button" onClick={() => pdf().catch((e) => alert(e?.message || "Couldn't make the PDF"))} className="py-2.5 rounded-xl bg-[var(--c-teal)] text-white text-xs font-bold flex items-center justify-center gap-1.5"><FileDown className="w-4 h-4" /> PDF</button>
+        <button type="button" onClick={copy} className="py-2.5 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5">{copied ? <><Check className="w-4 h-4" /> Copied</> : <><Copy className="w-4 h-4" /> Copy</>}</button>
+        <button type="button" onClick={share} className="py-2.5 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><Share2 className="w-4 h-4" /> Share</button>
+        <button type="button" onClick={() => pdf().catch((e) => alert(e?.message || "Couldn't make the PDF"))} className="py-2.5 rounded-full bg-[var(--c-teal)] text-[var(--c-on-primary)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><FileDown className="w-4 h-4" /> PDF</button>
       </div>
       <p className="text-[10.5px] text-[var(--c-muted)]">You can edit the text before copying. Add patient identifiers only in the clinical record, not here.</p>
     </Sheet>
