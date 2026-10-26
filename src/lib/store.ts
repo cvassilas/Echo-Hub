@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import { Values } from "./echo";
 
 export interface LinkedApp { packageName: string; label: string }
-export interface Settings { theme: "dark" | "light"; apps: LinkedApp[] }
+export interface Settings { theme: "dark" | "light"; apps: LinkedApp[]; standard: "BSE" | "ASE"; order: "structure" | "view" }
 export interface SavedReport { id: string; label: string; created: number; updated: number; values: Values; text?: string }
 
 const KEY = "echo_hub_v1";
 interface Data { settings: Settings; reports: SavedReport[]; draft: { id?: string; label: string; values: Values; text?: string } }
-const DEFAULT: Data = { settings: { theme: "dark", apps: [] }, reports: [], draft: { label: "", values: {} } };
+const DEFAULT: Data = { settings: { theme: "dark", apps: [], standard: "BSE", order: "view" }, reports: [], draft: { label: "", values: {} } };
 
 let cache: Data | null = null;
 const listeners = new Set<() => void>();

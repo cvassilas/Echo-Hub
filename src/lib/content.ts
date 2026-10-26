@@ -7,6 +7,17 @@
 export interface Caveat { title: string; points: string[] }
 
 export const CAVEATS: Record<string, Caveat> = {
+  strain: {
+    title: "Strain (speckle tracking)",
+    points: [
+      "Values differ between vendors and software versions. Compare serial studies on the same platform.",
+      "Enter GLS and RV strain as the measured negative number (e.g. −19%); the app grades the magnitude.",
+      "LV GLS: magnitude ≥ 18% normal, 16–18% borderline, < 16% reduced. Average the three apical views at a frame rate of 40–90 Hz with good endocardial tracking.",
+      "RV free wall strain: magnitude < 20% is abnormal (ASE/EACVI 2015). Use an RV-focused view; exclude the septum for free-wall strain.",
+      "LA reservoir strain (LARS): ≤ 18% supports raised LA pressure (ASE 2025). Normal values average about 39%. It's reduced in AF and by significant MR.",
+      "Poor tracking in any segment invalidates the global value: check the tracking before reporting.",
+    ],
+  },
   diast_invalid: {
     title: "When the diastolic algorithm doesn't apply",
     points: [
@@ -404,34 +415,44 @@ export interface RefTable { title: string; source: string; head: string[]; rows:
 
 export const REFS: RefTable[] = [
   {
-    title: "LV systolic function (UK)", source: "BSE normal reference intervals 2020",
-    head: ["Category", "LVEF"], rows: [["Hyperdynamic", "> 70%"], ["Normal", "≥ 55%"], ["Borderline low", "50–54%"], ["Impaired", "36–49%"], ["Severely impaired", "≤ 35%"]],
-    note: "ASE/EACVI 2015 uses normal ≥ 52% (men) and ≥ 54% (women), mildly abnormal 41–51/53%, moderately 30–40%, severely < 30%.",
+    title: "LV systolic function", source: "BSE 2020 (default) / ASE/EACVI 2015",
+    head: ["Category", "BSE", "ASE (men / women)"], rows: [["Hyperdynamic", "> 70%", "> 72 / > 74%"], ["Normal", "≥ 55%", "≥ 52 / ≥ 54%"], ["Borderline low (BSE) / mildly abnormal (ASE)", "50–54%", "41–51 / 41–53%"], ["Impaired / moderately abnormal", "36–49%", "30–40%"], ["Severely impaired", "≤ 35%", "< 30%"]],
+    note: "BSE advises quoting the LVEF number rather than 'mild' or 'moderate' LV dysfunction.",
   },
   {
-    title: "LV size and wall thickness", source: "ASE/EACVI chamber quantification 2015",
-    head: ["Measure", "Men", "Women"], rows: [
-      ["LVIDd (cm)", "4.2–5.8", "3.8–5.2"], ["LVIDs (cm)", "2.5–4.0", "2.2–3.5"], ["IVSd / LVPWd (cm)", "0.6–1.0", "0.6–0.9"],
-      ["EDV index (ml/m²)", "34–74", "29–61"], ["ESV index (ml/m²)", "11–31", "8–24"], ["LV mass index, linear (g/m²)", "49–115", "43–95"], ["Relative wall thickness", "≤ 0.42", "≤ 0.42"],
+    title: "LV size: BSE 2020", source: "Harkness et al., Echo Res Pract 2020",
+    head: ["Measure", "Men: normal / mild / moderate / severe", "Women"], rows: [
+      ["LVIDd (cm)", "3.7–5.6 / 5.7–6.1 / 6.2–6.5 / > 6.5", "3.5–5.1 / 5.2–5.5 / 5.6–5.9 / > 5.9"],
+      ["LVIDs (cm)", "2.2–4.1 / 4.2–4.5 / 4.6–5.0 / > 5.0", "2.0–3.7 / 3.8–4.2 / 4.3–4.6 / > 4.6"],
+      ["LVEDV index (ml/m²)", "30–79 / 80–91 / 92–103 / > 103", "29–70 / 71–81 / 82–91 / > 91"],
+      ["LVESV index (ml/m²)", "9–31 / 32–36 / 37–42 / > 42", "8–27 / 28–32 / 33–37 / > 37"],
+      ["LV mass index (g/m²)", "40–110 / 111–127 / 128–145 / > 145", "33–99 / 100–115 / 116–131 / > 131"],
+      ["IVSd (cm)", "0.6–1.2", "0.5–1.1"], ["LVPWd (cm)", "0.6–1.2", "0.6–1.2"], ["Relative wall thickness", "≤ 0.42", "≤ 0.42"],
     ],
-    note: "RWT > 0.42 with normal mass = concentric remodelling; with raised mass = concentric hypertrophy. Normal RWT with raised mass = eccentric hypertrophy.",
   },
   {
-    title: "RV size and function", source: "ASE/EACVI 2015; ASE right heart 2010",
-    head: ["Measure", "Abnormal"], rows: [
-      ["RV basal diameter", "> 41 mm"], ["RV mid diameter", "> 35 mm"], ["RV:LV basal ratio", "> 0.6 dilated; > 1.0 severely"], ["RV free wall thickness", "> 5 mm"], ["RVOT proximal (PLAX)", "> 35 mm"],
-      ["TAPSE", "< 17 mm"], ["RV S′ (TDI)", "< 9.5 cm/s"], ["RV FAC", "< 35%"], ["TAPSE/sPAP", "< 0.55 mm/mmHg (supports PH)"],
+    title: "LV size: ASE/EACVI", source: "Lang et al., JASE 2015 (normal); severity bands for linear dimensions from ASE 2005",
+    head: ["Measure", "Men: normal / mild / moderate / severe", "Women"], rows: [
+      ["LVIDd (cm)", "4.2–5.8 / 5.9–6.3 / 6.4–6.8 / ≥ 6.9", "3.8–5.2 / 5.3–5.6 / 5.7–6.1 / ≥ 6.2"],
+      ["IVSd / LVPWd (cm)", "0.6–1.0 / 1.1–1.3 / 1.4–1.6 / ≥ 1.7", "0.6–0.9 / 1.0–1.2 / 1.3–1.5 / ≥ 1.6"],
+      ["LVEDV index (ml/m²)", "34–74", "29–61"], ["LVESV index (ml/m²)", "11–31", "8–24"],
+      ["LV mass index, linear (g/m²)", "49–115 / 116–131 / 132–148 / ≥ 149", "43–95 / 96–108 / 109–121 / ≥ 122"],
     ],
-    note: "The RV:LV ratio thresholds are widely used in acute care (e.g. PE) rather than set in a single guideline.",
   },
   {
-    title: "Atria", source: "ASE/EACVI 2015; BSE",
-    head: ["Measure", "Normal", "Mild", "Moderate", "Severe"], rows: [["LA volume index (ml/m²)", "≤ 34", "35–41", "42–48", "> 48"], ["LA area A4C (cm²)", "≤ 20", "", "", ""], ["RA area A4C (cm²)", "≤ 18", "", "", ""]],
+    title: "RV and atria", source: "BSE 2020 / ASE/EACVI 2015",
+    head: ["Measure", "BSE (men / women)", "ASE"], rows: [
+      ["RV basal diameter", "≤ 47 / ≤ 43 mm", "≤ 41 mm"], ["RV mid diameter", "≤ 42 / ≤ 35 mm", "≤ 35 mm"],
+      ["TAPSE", "≥ 17 mm", "≥ 17 mm"], ["RV S′", "≥ 9 cm/s", "≥ 9.5 cm/s"], ["RV FAC", "≥ 30 / ≥ 35%", "≥ 35%"],
+      ["RV free wall thickness", "", "≤ 5 mm"], ["RA area", "≤ 22 / ≤ 19 cm²", "≤ 18 cm² (ASE 2010)"],
+      ["LA volume index", "< 34 normal; 34–38 borderline; > 38 dilated", "≤ 34; 35–41 mild; 42–48 moderate; > 48 severe"],
+      ["RV:LV basal ratio", "> 1.0 suggests significant RV dilatation (acute care)", ""],
+    ],
   },
   {
-    title: "Aorta (upper limits, approximate)", source: "ASE/EACVI 2015 (mean + 2 SD)",
-    head: ["Level", "Men", "Women"], rows: [["Sinuses of Valsalva", "4.0 cm", "3.6 cm"], ["Proximal ascending aorta", "3.8 cm", "3.5 cm"]],
-    note: "Size increases with BSA and age; use indexed values or z-scores for borderline cases.",
+    title: "Aorta", source: "BSE 2020 (indexed to height) / ASE 2015",
+    head: ["Level", "BSE upper limit (men / women)", "ASE (men / women)"], rows: [["Sinuses of Valsalva", "21.8 / 20.7 mm per m height", "4.0 / 3.6 cm"], ["Proximal ascending aorta", "19.9 / 19.8 mm per m height", "3.8 / 3.5 cm"]],
+    note: "BSE measures inner edge to inner edge at end-diastole and indexes to height (e.g. a 1.75 m man: sinus up to 3.8 cm).",
   },
   {
     title: "Aortic stenosis", source: "EAE/ASE 2009/2017; ESC/EACTS 2021",
@@ -466,17 +487,29 @@ export const REFS: RefTable[] = [
     note: "*Signs from at least two categories. A, ventricles: RV/LV basal ratio > 1.0, septal flattening (LVEI > 1.1). B, pulmonary artery: RVOT AT < 105 ms and/or mid-systolic notching, early diastolic PR velocity > 2.2 m/s, PA diameter > aortic root or > 25 mm. C, IVC and RA: IVC > 21 mm with reduced collapse, RA area > 18 cm². TAPSE/sPAP < 0.55 mm/mmHg also supports PH.",
   },
   {
-    title: "Diastolic function, normal LVEF", source: "ASE/EACVI 2016",
-    head: ["Criterion", "Abnormal"], rows: [["Average E/e′", "> 14"], ["Septal e′ or lateral e′", "< 7 or < 10 cm/s"], ["TR velocity", "> 2.8 m/s"], ["LA volume index", "> 34 ml/m²"]],
-    note: "More than half positive: diastolic dysfunction. Fewer than half: normal. Exactly half: indeterminate.",
+    title: "Diastolic function: estimating LA pressure (sinus rhythm)", source: "ASE 2025 update (supersedes ASE/EACVI 2016)",
+    head: ["Step", "Variables", "Interpretation"], rows: [
+      ["1. Primary", "Reduced e′ (septal ≤ 6, lateral ≤ 7, average ≤ 6.5 cm/s; age-adjusted if preferred); average E/e′ > 14 (septal ≥ 15, lateral ≥ 13); PASP ≥ 35 mmHg (or TR ≥ 2.8 m/s if RAP unknown)", "All three abnormal: raised LAP. None abnormal: normal LAP"],
+      ["Grade", "E/A with raised LAP", "E/A < 2: grade 2. E/A ≥ 2: grade 3"],
+      ["Grade 1", "Reduced e′ only, E/A ≤ 0.8", "Impaired relaxation, normal LAP"],
+      ["2. Supplementary (if discordant)", "LARS ≤ 18%; PV S/D ≤ 0.67; LAVI > 34 ml/m²; IVRT ≤ 70 ms", "Abnormal: raised LAP. Normal: LAP likely normal. None available: LAP cannot be determined"],
+    ],
+    note: "Diastolic dysfunction is present if e′ is reduced plus ≥ 1 of: E/e′ > 14, LARS ≤ 18%, E/A ≤ 0.8 or ≥ 2, LAVI > 34; or with normal e′, ≥ 2 of these. Age-adjusted e′ (septal/lateral/average): 20–39 y < 7/< 10/< 9; 40–65 y < 6/< 8/< 7; > 65 y ≤ 6/≤ 7/≤ 6.5.",
   },
   {
-    title: "Diastolic function, reduced LVEF or myocardial disease", source: "ASE/EACVI 2016",
-    head: ["Mitral inflow", "Next step", "Result"], rows: [
-      ["E/A ≤ 0.8 and E ≤ 50 cm/s", "None", "Normal LAP, grade I"],
-      ["E/A ≥ 2", "None", "Raised LAP, grade III"],
-      ["E/A ≤ 0.8 with E > 50, or E/A 0.8–2", "Check E/e′ > 14, TR > 2.8 m/s, LAVI > 34", "2–3 positive: raised LAP, grade II. 2–3 negative: normal LAP, grade I. Only 2 available and discordant: indeterminate"],
+    title: "Diastolic function: special situations", source: "ASE 2025 update",
+    head: ["Situation", "Raised LAP suggested by"], rows: [
+      ["Atrial fibrillation", "E/septal e′ ≥ 11; TR > 2.8 m/s; DT < 160 ms (reduced EF); IVRT ≤ 65 ms"],
+      ["Moderate–severe MAC", "E/A > 1.8 (E/A < 0.8 = normal); if 0.8–1.8, IVRT < 80 ms"],
+      ["Mitral stenosis", "IVRT < 60 ms; A > 1.5 m/s; IVRT/TE–e′ < 4.2"],
+      ["Severe primary MR", "IVRT < 60 ms; Ar–A ≥ 30 ms; IVRT/TE–e′ < 5.6"],
+      ["Mitral repair, replacement, TEER", "Standard algorithm not applicable"],
     ],
+  },
+  {
+    title: "Strain", source: "ASE/EACVI 2015; AHA/ACC 2022; ASE 2025",
+    head: ["Measure", "Normal", "Abnormal"], rows: [["LV GLS (magnitude)", "≥ 18%", "16–18% borderline; < 16% reduced"], ["RV free wall strain (magnitude)", "≥ 20%", "< 20%"], ["LA reservoir strain", "Mean ≈ 39%", "≤ 18% supports raised LAP"]],
+    note: "Vendor-dependent: use the same platform for serial comparison.",
   },
   {
     title: "Pericardial effusion size", source: "ESC pericardial 2015",

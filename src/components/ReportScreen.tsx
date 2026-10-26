@@ -2,8 +2,8 @@ import React, { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown } from "lucide-react";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
-import { FIELDS, SECTIONS, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num } from "../lib/echo";
-import { useData, setValue, setDraft, newDraft, saveDraftAsReport, openReport, deleteReport } from "../lib/store";
+import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num } from "../lib/echo";
+import { useData, updateSettings, setValue, setDraft, newDraft, saveDraftAsReport, openReport, deleteReport } from "../lib/store";
 import { card, inputCls, GradeBadge, Sheet, CaveatList, InfoButton, LEVEL_COLOR } from "./ui";
 import { saveFile } from "../lib/saveFile";
 
@@ -18,11 +18,26 @@ const DERIVED_BY_SECTION: Partial<Record<SectionId, (keyof Derived)[]>> = {
   ivc: ["rap"],
 };
 
+const DERIVED_BY_VIEW: Partial<Record<ViewId, (keyof Derived)[]>> = {
+  context: ["bsa"],
+  plax: ["fs", "rwt", "lv_mass", "lvmi"],
+  a4c: ["ef_calc", "edvi", "esvi", "e_a", "e_eprime", "lavi", "rvsp", "mpap", "mva_pht"],
+  rvf: ["fac", "tapse_spap"],
+  a5c: ["sv", "svi", "co", "ci", "av_peakpg", "ava", "avai", "dvi"],
+  ivcv: ["rap"],
+};
+
+interface Sec { id: string; title: string; fields: FieldDef[]; derived: (keyof Derived)[]; ph: boolean; diast: boolean }
+
 export const ReportScreen: React.FC = () => {
-  const { draft, reports } = useData();
-  const v = draft.values;
+  const { draft, reports, settings } = useData();
+  const v = useMemo(() => ({ ...draft.values, __std: settings.standard || "BSE" }), [draft.values, settings.standard]);
   const d = useMemo(() => derive(v), [v]);
-  const [open, setOpen] = useState<Record<string, boolean>>({ context: true, lv: true });
+  const byView = (settings.order || "view") === "view";
+  const secs: Sec[] = byView
+    ? VIEW_SECTIONS.map((s) => ({ id: s.id, title: s.title, fields: FIELDS.filter((f) => FIELD_VIEW[f.key] === s.id), derived: DERIVED_BY_VIEW[s.id] || [], ph: s.id === "ivcv", diast: s.id === "a4c" }))
+    : SECTIONS.map((s) => ({ id: s.id, title: s.title, fields: FIELDS.filter((f) => f.section === s.id), derived: DERIVED_BY_SECTION[s.id as SectionId] || [], ph: s.id === "tv", diast: s.id === "mv" }));
+  const [open, setOpen] = useState<Record<string, boolean>>({ context: true, lv: true, plax: true });
   const [more, setMore] = useState<Record<string, boolean>>({});
   const [tips, setTips] = useState<FieldDef | null>(null);
   const [showReport, setShowReport] = useState(false);
@@ -47,14 +62,25 @@ export const ReportScreen: React.FC = () => {
         </div>
       </div>
 
-      {SECTIONS.map((s) => {
-        const fields = FIELDS.filter((f) => f.section === s.id);
-        const basic = fields.filter((f) => !f.advanced), adv = fields.filter((f) => f.advanced);
+      <div className="flex items-center gap-2">
+        <div className="flex flex-1 rounded-full border border-[var(--c-border2)] overflow-hidden">
+          {([["view", "In scan order"], ["structure", "By structure"]] as const).map(([k, l]) => (
+            <button key={k} type="button" onClick={() => updateSettings({ order: k })}
+              className={`m3-press flex-1 py-2 text-[12.5px] font-bold ${(settings.order || "view") === k ? "bg-[var(--c-tonal)] text-[var(--c-on-tonal)]" : "text-[var(--c-text2)]"}`}>{(settings.order || "view") === k ? "✓ " : ""}{l}</button>
+          ))}
+        </div>
+        <button type="button" onClick={() => updateSettings({ standard: settings.standard === "ASE" ? "BSE" : "ASE" })} className="m3-press px-3 py-2 rounded-full border border-[var(--c-border2)] text-[12px] font-bold text-[var(--c-teal)]" title="Reference standard">{settings.standard === "ASE" ? "ASE 2015" : "BSE 2020"}</button>
+      </div>
+
+      {secs.map((s) => {
+        const fields = s.fields;
+        let basic = fields.filter((f) => !f.advanced), adv = fields.filter((f) => f.advanced);
+        if (!basic.length) { basic = adv; adv = []; }
         const shown = more[s.id] ? fields : basic;
         const count = fields.filter((f) => String(v[f.key] || "").trim()).length;
         const abn = fields.map((f) => gradeField(f.key, v, d)).filter((g) => g && !["normal", "info"].includes(g.level)).length;
         const isOpen = !!open[s.id];
-        const derived = (DERIVED_BY_SECTION[s.id] || []).filter((k) => d[k] !== undefined);
+        const derived = s.derived.filter((k) => d[k] !== undefined);
         return (
           <div key={s.id} className={card}>
             <button type="button" onClick={() => setOpen({ ...open, [s.id]: !isOpen })} className="w-full flex items-center justify-between px-4 py-3">
@@ -87,16 +113,16 @@ export const ReportScreen: React.FC = () => {
                         </div>
                       );
                     })}
-                    {s.id === "tv" && d.rvsp && d.rap === undefined && <p className="text-[10px] text-[var(--c-muted)]">RAP of 8 mmHg assumed (enter IVC to estimate).</p>}
+                    {s.derived.includes("rvsp") && d.rvsp && d.rap === undefined && <p className="text-[10px] text-[var(--c-muted)]">RAP of 8 mmHg assumed (enter IVC to estimate).</p>}
                   </div>
                 )}
-                {s.id === "tv" && ph.probability !== "Not assessable" && (
+                {s.ph && ph.probability !== "Not assessable" && (
                   <div className="rounded-2xl p-3 text-xs" style={{ background: `color-mix(in srgb, ${LEVEL_COLOR[ph.probability === "High" ? "severe" : ph.probability === "Intermediate" ? "moderate" : "normal"]} 12%, transparent)` }}>
                     <b className="text-[var(--c-text)]">PH probability: {ph.probability}</b>
                     <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ph.reason}</p>
                   </div>
                 )}
-                {s.id === "mv" && (num(v, "e") !== undefined || ds.graded) && (
+                {s.diast && (num(v, "e") !== undefined || num(v, "e_sept") !== undefined || ds.graded) && (
                   <div className="rounded-2xl p-3 text-xs bg-[var(--c-surface2)]">
                     <b className="text-[var(--c-text)]">{ds.conclusion}</b>
                     {ds.detail && <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ds.detail}</p>}
@@ -158,8 +184,8 @@ const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof 
 );
 
 const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
-  const { draft } = useData();
-  const generated = useMemo(() => buildReport(draft.values).text, [draft.values]);
+  const { draft, settings } = useData();
+  const generated = useMemo(() => buildReport({ ...draft.values, __std: settings.standard || "BSE" }).text, [draft.values, settings.standard]);
   const text = draft.text ?? generated;
   const [copied, setCopied] = useState(false);
   const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* */ } };

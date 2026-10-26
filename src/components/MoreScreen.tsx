@@ -97,6 +97,21 @@ export const MoreScreen: React.FC = () => {
           ))}
         </div>
       </div>
+      <div className={`${card} p-4 space-y-3`}>
+        <SectionTitle>Report settings</SectionTitle>
+        {([["Reference standard", "standard", [["BSE", "BSE 2020"], ["ASE", "ASE/EACVI 2015"]]], ["Measurement order", "order", [["view", "In scan order"], ["structure", "By structure"]]]] as const).map(([title, key, opts]) => (
+          <div key={key} className="space-y-1.5">
+            <p className="text-[12px] font-semibold text-[var(--c-text2)]">{title}</p>
+            <div className="grid grid-cols-2 gap-2">
+              {opts.map(([val, label]) => (
+                <button key={val} type="button" onClick={() => updateSettings({ [key]: val } as any)}
+                  className={`py-2.5 rounded-full border text-xs font-bold m3-press ${(settings as any)[key] === val ? "border-transparent bg-[var(--c-tonal)] text-[var(--c-on-tonal)]" : "border-[var(--c-border2)] text-[var(--c-text2)]"}`}>{label}</button>
+              ))}
+            </div>
+          </div>
+        ))}
+        <p className="text-[11px] text-[var(--c-muted)]">Diastolic function always uses ASE/EACVI 2025; strain cut-offs follow EACVI/ASE consensus.</p>
+      </div>
       {Capacitor.isNativePlatform() && (
         <div className={`${card} p-4 space-y-2`}>
           <SectionTitle>Updates</SectionTitle>
