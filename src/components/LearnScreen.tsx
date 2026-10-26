@@ -23,6 +23,8 @@ export const LearnScreen: React.FC = () => {
     <div className="space-y-3">
       <BackBar onBack={() => setConcept(null)} title={DIAGRAMS[concept].title} />
       <div className={`${card} p-3`}><Diagram id={concept} /></div>
+      {concept === "inflow" && <RealExample src="m_mv_inflow" note="Real example: normal mitral inflow (E 61 cm/s, A 53 cm/s, E/A 1.1)." />}
+      {concept === "doppler" && <RealExample src="m_lvot_vti" note="Real example: LVOT PW Doppler, beam aligned with flow from the apical window." />}
       {concept === "inflow" && <div className={`${card} p-4`}><CaveatList ids={["mitral_inflow", "eprime", "diast_invalid"]} /></div>}
       {concept === "pisa" && <div className={`${card} p-4`}><CaveatList ids={["pisa"]} /></div>}
       {concept === "doppler" && <div className={`${card} p-4`}><Bullets items={["Doppler measures only the component of velocity along the beam: measured = true × cos θ.", "Keep θ under 20° for velocities used in gradients (AS, TR, RVSP) and VTI.", "Angle correction is not recommended for cardiac Doppler; move the probe or change window instead.", "Colour Doppler first shows the jet direction; then line up the CW or PW cursor with it."]} /></div>}
@@ -92,6 +94,13 @@ export const LearnScreen: React.FC = () => {
   );
 };
 
+const RealExample: React.FC<{ src: string; note: string }> = ({ src, note }) => (
+  <div className={`${card} p-3 space-y-2`}>
+    <img src={`./views/${src}.jpg`} alt="" className="w-full rounded-2xl bg-black" />
+    <p className="text-[12px] text-[var(--c-text2)]">{note}</p>
+  </div>
+);
+
 const BackBar: React.FC<{ onBack: () => void; title: string }> = ({ onBack, title }) => (
   <button type="button" onClick={onBack} className="flex items-center gap-2 text-sm font-bold text-[var(--c-teal)]"><ArrowLeft className="w-4 h-4" /> {title}</button>
 );
@@ -113,13 +122,14 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
 );
 
 const ViewMedia: React.FC<{ v: ViewGuide }> = ({ v }) => {
-  const opts = [...(v.media || []).map((m) => ({ key: m.src, label: m.label })), { key: "diagram", label: "Labelled" }];
+  const media = v.media || [];
+  const opts = media.length ? media.map((m) => ({ key: m.src, label: m.label })) : [{ key: "diagram", label: "Diagram" }];
   const [sel, setSel] = useState(opts[0].key);
-  const m = v.media?.find((x) => x.src === sel);
+  const m = media.find((x) => x.src === sel);
   return (
     <div className={`${card} p-3 space-y-2.5`}>
       {opts.length > 1 && (
-        <div className="flex gap-2 overflow-x-auto">
+        <div className="flex gap-2 overflow-x-auto -mx-1 px-1 pb-0.5">
           {opts.map((o) => (
             <button key={o.key} type="button" onClick={() => setSel(o.key)}
               className={`m3-press shrink-0 px-3.5 py-1.5 rounded-lg text-[13px] font-bold border ${sel === o.key ? "bg-[var(--c-tonal)] text-[var(--c-on-tonal)] border-transparent" : "border-[var(--c-border2)] text-[var(--c-text2)]"}`}>
@@ -130,9 +140,18 @@ const ViewMedia: React.FC<{ v: ViewGuide }> = ({ v }) => {
       )}
       {m ? (
         <>
-          <video key={m.src} src={`./views/${m.src}.mp4`} poster={`./views/${m.src}.jpg`} autoPlay muted loop playsInline
-            className="w-full rounded-2xl bg-black" aria-label={m.label} />
-          <p className="text-[11px] text-[var(--c-muted)]">Real normal study, anonymised: cropped to the sector with all on-screen text removed. Tap "Labelled" for the annotated diagram.</p>
+          <div className="relative">
+            {m.still ? (
+              <img src={`./views/${m.src}.jpg`} alt={m.label} className="w-full rounded-2xl bg-black" />
+            ) : (
+              <video key={m.src} src={`./views/${m.src}.mp4`} poster={`./views/${m.src}.jpg`} autoPlay muted loop playsInline className="w-full rounded-2xl bg-black" aria-label={m.label} />
+            )}
+            {(m.marks || []).map(([x, y, t]) => (
+              <span key={t} className="absolute -translate-x-1/2 -translate-y-1/2 px-1.5 py-0.5 rounded-md text-[12px] font-bold text-white bg-black/55 ring-1 ring-white/40 pointer-events-none"
+                style={{ left: `${x}%`, top: `${y}%` }}>{t}</span>
+            ))}
+          </div>
+          <p className="text-[12px] leading-snug text-[var(--c-text2)]">{m.note || "Real normal study, anonymised: cropped to the scan sector with on-screen text removed."}</p>
         </>
       ) : <Diagram id={v.diagram} />}
     </div>
