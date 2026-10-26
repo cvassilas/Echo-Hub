@@ -319,7 +319,7 @@ export const VIEWS: ViewGuide[] = [
     pitfalls: ["Off-axis cuts mimic septal flattening.", "Hypovolaemia: papillary muscles 'kiss' in systole (end-systolic cavity obliteration)."],
   },
   {
-    id: "psax_apex", name: "PSAX: apical level", group: "Parasternal", diagram: "psax_pm",
+    id: "psax_apex", name: "PSAX: apical level", group: "Parasternal", diagram: "psax_apex",
     probe: "Slide down one rib space and laterally from the papillary level.",
     marker: "As PSAX.",
     structures: ["Apical LV segments"],

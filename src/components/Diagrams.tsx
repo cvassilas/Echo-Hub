@@ -226,6 +226,17 @@ const PsaxPm = () => (
   </Frame>
 );
 
+const PsaxApex = () => (
+  <Frame title="PSAX apical level" caption="Small round LV cavity, no papillary muscles; RV barely seen" seed={10}>
+    <Wall d="M70,70 Q150,48 230,70" w={5} />
+    <Blood d="M96,84 Q150,66 172,76 Q150,88 104,96 Z" />
+    <Circ cx={150} cy={134} r={30} w={18} />
+    <Peri d="M100,168 Q150,200 200,168" w={4} />
+    <L x={128} y={86} t="RV tip" s={9} />
+    <L x={150} y={138} t="LV apex" s={11} />
+  </Frame>
+);
+
 const PsaxMv = () => (
   <Frame title="PSAX mitral valve level" caption="Scan to the leaflet tips to planimeter MVA" seed={11}>
     <Wall d="M38,58 Q150,26 262,58" w={6} />
@@ -480,6 +491,7 @@ export const DIAGRAMS: Record<string, { title: string; el: React.FC }> = {
   psax_av: { title: "PSAX: aortic valve level", el: PsaxAv },
   psax_mv: { title: "PSAX: mitral valve level", el: PsaxMv },
   psax_pm: { title: "PSAX: papillary muscle level", el: PsaxPm },
+  psax_apex: { title: "PSAX: apical level", el: PsaxApex },
   a4c: { title: "Apical four chamber", el: A4c },
   a5c: { title: "Apical five / three chamber", el: A5c },
   a2c: { title: "Apical two chamber", el: A2c },
