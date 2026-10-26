@@ -74,4 +74,15 @@ public class AppLauncherPlugin extends Plugin {
         getContext().startActivity(i);
         call.resolve();
     }
+
+    @PluginMethod
+    public void openUrl(PluginCall call) {
+        String url = call.getString("url");
+        if (url == null) { call.reject("No link"); return; }
+        Intent i = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (i.resolveActivity(getContext().getPackageManager()) == null) { call.reject("Clinical Logs isn't installed on this phone"); return; }
+        getContext().startActivity(i);
+        call.resolve();
+    }
 }

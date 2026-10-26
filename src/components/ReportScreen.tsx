@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown, BookPlus } from "lucide-react";
+import { toLogEntry, sendToClinicalLogs } from "../lib/clinicalLogs";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num } from "../lib/echo";
@@ -185,8 +186,15 @@ const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof 
 
 const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { draft, settings } = useData();
-  const generated = useMemo(() => buildReport({ ...draft.values, __std: settings.standard || "BSE" }).text, [draft.values, settings.standard]);
+  const rep = useMemo(() => buildReport({ ...draft.values, __std: settings.standard || "BSE" }), [draft.values, settings.standard]);
+  const generated = rep.text;
   const text = draft.text ?? generated;
+  const [logMsg, setLogMsg] = useState<string | null>(null);
+  const toLog = async () => {
+    setLogMsg(null);
+    try { await sendToClinicalLogs(toLogEntry(draft.values, text, rep.findings)); }
+    catch (e: any) { setLogMsg(e?.message || "Couldn't open Clinical Logs"); }
+  };
   const [copied, setCopied] = useState(false);
   const copy = async () => { try { await navigator.clipboard.writeText(text); setCopied(true); setTimeout(() => setCopied(false), 1500); } catch { /* */ } };
   const share = async () => {
@@ -224,6 +232,8 @@ const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <button type="button" onClick={share} className="py-2.5 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><Share2 className="w-4 h-4" /> Share</button>
         <button type="button" onClick={() => pdf().catch((e) => alert(e?.message || "Couldn't make the PDF"))} className="py-2.5 rounded-full bg-[var(--c-teal)] text-[var(--c-on-primary)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><FileDown className="w-4 h-4" /> PDF</button>
       </div>
+      <button type="button" onClick={toLog} className="w-full py-2.5 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><BookPlus className="w-4 h-4" /> Add to Clinical Logs</button>
+      {logMsg && <p className="text-[11px] text-red-400">{logMsg}</p>}
       <p className="text-[10.5px] text-[var(--c-muted)]">You can edit the text before copying. Add patient identifiers only in the clinical record, not here.</p>
     </Sheet>
   );
