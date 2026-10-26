@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Carlito", Calibri, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
 /* Theme tokens. Dark is the original look; light is the clean grey/white style. */
 :root {
   --c-bg: #10161B;
@@ -55,7 +59,8 @@ html.theme-light .shadow-lg, html.theme-light .shadow-xl, html.theme-light .shad
   body {
     background-color: var(--c-bg);
     color: var(--c-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-family: "Carlito", Calibri, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16.5px;
     -webkit-tap-highlight-color: transparent;
     overflow-x: hidden;
   }

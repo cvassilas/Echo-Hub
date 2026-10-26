@@ -2,6 +2,8 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { Capacitor } from "@capacitor/core";
 import App from "./App";
+import "@fontsource/carlito/400.css";
+import "@fontsource/carlito/700.css";
 import "./index.css";
 import { getData } from "./lib/store";
 
