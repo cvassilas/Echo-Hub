@@ -298,7 +298,7 @@ export const GRADERS: Record<string, Grader> = {
   mapse: (n) => n >= 10 ? g("normal", "≥ 10 mm") : n >= 8 ? g("borderline", "Reduced (8–10 mm)") : g("moderate", "Markedly reduced (< 8 mm)"),
   lvot_vti: (n) => n < 18 ? g("mild", "Low (< 18 cm): low stroke volume") : n > 25 ? g("info", "High (> 25 cm)") : g("normal", "Normal (18–25 cm)"),
   rv_basal: (n, v) => { const hi = stdOf(v) === "BSE" ? (sexOf(v) === "F" ? 43 : 47) : 41; if (stdOf(v) === "BSE" && !sexOf(v)) return g("info", "Enter sex to grade"); return n > hi ? g("mild", `Dilated (> ${hi} mm)`) : g("normal", `Normal (≤ ${hi} mm)`); },
-  rv_mid: (n, v) => { const hi = stdOf(v) === "BSE" ? (sexOf(v) === "F" ? 35 : 42) : 35; return n > hi ? g("mild", `Dilated (> ${hi} mm)`) : g("normal", `Normal (≤ ${hi} mm)`); },
+  rv_mid: (n, v) => { if (stdOf(v) === "BSE" && !sexOf(v)) return g("info", "Enter sex to grade"); const hi = stdOf(v) === "BSE" ? (sexOf(v) === "F" ? 35 : 42) : 35; return n > hi ? g("mild", `Dilated (> ${hi} mm)`) : g("normal", `Normal (≤ ${hi} mm)`); },
   rv_lv: (n) => n > 1.0 ? g("severe", "Severely dilated (> 1.0)") : n > 0.6 ? g("moderate", "Dilated (0.6–1.0)") : g("normal", "Normal (≤ 0.6)"),
   tapse: (n) => n < 17 ? g("moderate", "Reduced (< 17 mm)") : g("normal", "Normal (≥ 17 mm)"),
   rv_s: (n, v) => { const lo = stdOf(v) === "BSE" ? 9 : 9.5; return n < lo ? g("moderate", `Reduced (< ${lo} cm/s)`) : g("normal", `Normal (≥ ${lo} cm/s)`); },
@@ -313,10 +313,10 @@ export const GRADERS: Record<string, Grader> = {
   ar_vc: (n) => n < 0.3 ? g("mild", "Mild (< 0.3 cm)") : n <= 0.6 ? g("moderate", "Moderate (0.3–0.6 cm)") : g("severe", "Severe (> 0.6 cm)"),
   ar_pht: (n) => n > 500 ? g("mild", "Mild (> 500 ms)") : n >= 200 ? g("moderate", "Moderate (200–500 ms)") : g("severe", "Severe (< 200 ms)"),
   mr_vc: (n) => n < 0.3 ? g("mild", "Mild (< 0.3 cm)") : n < 0.7 ? g("moderate", "Moderate (0.3–0.69 cm)") : g("severe", "Severe (≥ 0.7 cm)"),
-  mr_eroa: (n) => n < 0.2 ? g("mild", "Mild (< 0.2 cm²)") : n < 0.4 ? g("moderate", "Moderate (0.2–0.39 cm²); severe if secondary MR (ESC ≥ 0.2)") : g("severe", "Severe (≥ 0.4 cm²)"),
+  mr_eroa: (n) => n < 0.2 ? g("mild", "Mild (< 0.2 cm²)") : n < 0.4 ? g("moderate", "Moderate (0.2–0.39 cm²); severe if secondary MR (ESC 2025 ≥ 0.3)") : g("severe", "Severe (≥ 0.4 cm²)"),
   mv_meanpg: (n) => n < 5 ? g("mild", "< 5 mmHg (mild MS range)") : n <= 10 ? g("moderate", "5–10 mmHg (moderate MS range)") : g("severe", "> 10 mmHg (severe MS range)"),
-  e_sept: (n) => n < 7 ? g("mild", "Reduced (< 7 cm/s)") : g("normal", "Normal (≥ 7 cm/s)"),
-  e_lat: (n) => n < 10 ? g("mild", "Reduced (< 10 cm/s)") : g("normal", "Normal (≥ 10 cm/s)"),
+  e_sept: (n, v) => { const c = eprimeCut(num(v, "age")); return eLow(n, c.sept, c.strict) ? g("mild", `Reduced (${c.strict ? "<" : "≤"} ${c.sept} cm/s, ${c.age})`) : g("normal", `Normal for ${c.age}`); },
+  e_lat: (n, v) => { const c = eprimeCut(num(v, "age")); return eLow(n, c.lat, c.strict) ? g("mild", `Reduced (${c.strict ? "<" : "≤"} ${c.lat} cm/s, ${c.age})`) : g("normal", `Normal for ${c.age}`); },
   trv: (n) => n <= 2.8 ? g("normal", "≤ 2.8 m/s") : n <= 3.4 ? g("moderate", "2.9–3.4 m/s") : g("severe", "> 3.4 m/s"),
   tr_vc: (n) => n < 0.3 ? g("mild", "Mild (< 0.3 cm)") : n < 0.7 ? g("moderate", "Moderate (0.3–0.69 cm)") : g("severe", "Severe (≥ 0.7 cm)"),
   pv_at: (n) => n < 105 ? g("moderate", "Short (< 105 ms): suggests raised PVR") : g("normal", "≥ 105 ms"),
@@ -357,13 +357,13 @@ export const DERIVED_GRADERS: Partial<Record<keyof Derived, (n: number, v: Value
   edvi: (n, v) => {
     const s = sexOf(v); if (!s) return null;
     if (stdOf(v) === "BSE") return s === "M" ? bands(n, 79, 91, 103, DIL, " ml/m²") : bands(n, 70, 81, 91, DIL, " ml/m²");
-    return s === "M" ? bands(n, 74, 86, 96, DIL, " ml/m²") : bands(n, 61, 86, 96, DIL, " ml/m²");
+    return s === "M" ? bands(n, 74, 89, 100, DIL, " ml/m²") : bands(n, 61, 70, 80, DIL, " ml/m²");
   },
   esvi: (n, v) => {
     const s = sexOf(v); if (!s) return null;
     const w: [string, string, string, string] = ["Normal", "Mildly increased", "Moderately increased", "Severely increased"];
     if (stdOf(v) === "BSE") return s === "M" ? bands(n, 31, 36, 42, w, " ml/m²") : bands(n, 27, 32, 37, w, " ml/m²");
-    return s === "M" ? bands(n, 31, 36, 42, w, " ml/m²") : bands(n, 24, 36, 42, w, " ml/m²");
+    return s === "M" ? bands(n, 31, 38, 45, w, " ml/m²") : bands(n, 24, 32, 40, w, " ml/m²");
   },
   rwt: (n) => n > 0.42 ? g("mild", "> 0.42 (concentric)") : g("normal", "≤ 0.42"),
   lvmi: (n, v) => {
@@ -424,11 +424,13 @@ export function phProbability(v: Values, d: Derived): PhResult {
 export interface DiastResult { conclusion: string; detail: string; graded: boolean; lap?: "normal" | "elevated" | "indeterminate" }
 
 /** Age-adjusted e′ cut-offs (ASE 2025 Table 6); defaults septal ≤ 6, lateral ≤ 7, average ≤ 6.5 cm/s. */
-function eprimeCut(age?: number): { sept: number; lat: number; avg: number; label: string } {
-  if (age !== undefined && age < 40) return { sept: 7, lat: 10, avg: 9, label: "age 20–39: septal < 7, lateral < 10, average < 9" };
-  if (age !== undefined && age <= 65) return { sept: 6, lat: 8, avg: 7, label: "age 40–65: septal < 6, lateral < 8, average < 7" };
-  return { sept: 6, lat: 7, avg: 6.5, label: "septal ≤ 6, lateral ≤ 7, average ≤ 6.5" };
+function eprimeCut(age?: number): { sept: number; lat: number; avg: number; label: string; age: string; strict: boolean } {
+  if (age !== undefined && age < 40) return { sept: 7, lat: 10, avg: 9, strict: true, age: "age 20–39", label: "age 20–39: septal < 7, lateral < 10, average < 9" };
+  if (age !== undefined && age <= 65) return { sept: 6, lat: 8, avg: 7, strict: true, age: "age 40–65", label: "age 40–65: septal < 6, lateral < 8, average < 7" };
+  if (age !== undefined) return { sept: 6, lat: 7, avg: 6.5, strict: true, age: "age > 65", label: "age > 65: septal < 6, lateral < 7, average < 6.5" };
+  return { sept: 6, lat: 7, avg: 6.5, strict: false, age: "any age", label: "septal ≤ 6, lateral ≤ 7, average ≤ 6.5" };
 }
+const eLow = (n: number, cut: number, strict: boolean) => (strict ? n < cut : n <= cut);
 
 export function diastology(v: Values, d: Derived): DiastResult {
   const rhythm = v.rhythm || "";
@@ -472,7 +474,7 @@ export function diastology(v: Values, d: Derived): DiastResult {
   // Sinus rhythm: three primary variables
   const cut = eprimeCut(age);
   const eAvg = es !== undefined && el !== undefined ? (es + el) / 2 : undefined;
-  const ePrimeLow = es === undefined && el === undefined ? undefined : (es !== undefined && es <= cut.sept) || (el !== undefined && el <= cut.lat) || (eAvg !== undefined && eAvg <= cut.avg);
+  const ePrimeLow = es === undefined && el === undefined ? undefined : (es !== undefined && eLow(es, cut.sept, cut.strict)) || (el !== undefined && eLow(el, cut.lat, cut.strict)) || (eAvg !== undefined && eLow(eAvg, cut.avg, cut.strict));
   const septRatio = d.e_sept_ratio, latRatio = e && el ? e / el : undefined;
   const eeHigh = d.e_eprime === undefined ? undefined : (es !== undefined && el !== undefined ? d.e_eprime > 14 : es !== undefined ? (septRatio ?? 0) >= 15 : (latRatio ?? 0) >= 13);
   const pasp = d.rvsp, rapKnown = d.rap !== undefined;

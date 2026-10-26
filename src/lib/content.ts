@@ -229,7 +229,7 @@ export const CAVEATS: Record<string, Caveat> = {
       "Measure the radius from the orifice to the first aliasing line in mid-systole (the same frame as peak regurgitant velocity).",
       "Assumes a hemispherical, single, round orifice. It's less accurate for eccentric jets, multiple jets, and secondary MR with a crescent-shaped orifice (underestimates).",
       "EROA = 2πr² × Va / Vmax; regurgitant volume = EROA × VTI of the regurgitant jet.",
-      "In secondary (functional) MR, ESC uses EROA ≥ 0.2 cm² and RVol ≥ 30 ml as severe.",
+      "In secondary (functional) MR, ESC 2025 uses EROA ≥ 0.3 cm² and/or RVol ≥ 45 ml as severe (ESC 2021 used ≥ 0.2 cm² and ≥ 30 ml).",
     ],
   },
   ms_grade: {
@@ -435,7 +435,9 @@ export const REFS: RefTable[] = [
     head: ["Measure", "Men: normal / mild / moderate / severe", "Women"], rows: [
       ["LVIDd (cm)", "4.2–5.8 / 5.9–6.3 / 6.4–6.8 / ≥ 6.9", "3.8–5.2 / 5.3–5.6 / 5.7–6.1 / ≥ 6.2"],
       ["IVSd / LVPWd (cm)", "0.6–1.0 / 1.1–1.3 / 1.4–1.6 / ≥ 1.7", "0.6–0.9 / 1.0–1.2 / 1.3–1.5 / ≥ 1.6"],
-      ["LVEDV index (ml/m²)", "34–74", "29–61"], ["LVESV index (ml/m²)", "11–31", "8–24"],
+      ["LVIDs (cm)", "2.5–4.0", "2.2–3.5"],
+      ["LVEDV index (ml/m²)", "34–74 / 75–89 / 90–100 / > 100", "29–61 / 62–70 / 71–80 / > 80"],
+      ["LVESV index (ml/m²)", "11–31 / 32–38 / 39–45 / > 45", "8–24 / 25–32 / 33–40 / > 40"],
       ["LV mass index, linear (g/m²)", "49–115 / 116–131 / 132–148 / ≥ 149", "43–95 / 96–108 / 109–121 / ≥ 122"],
     ],
   },
@@ -463,9 +465,9 @@ export const REFS: RefTable[] = [
     head: ["", "Mild", "Moderate", "Severe"], rows: [["Vena contracta (cm)", "< 0.3", "0.3–0.6", "> 0.6"], ["Pressure half-time (ms)", "> 500", "200–500", "< 200"], ["EROA (cm²)", "< 0.10", "0.10–0.29", "≥ 0.30"], ["Regurgitant volume (ml)", "< 30", "30–59", "≥ 60"], ["Descending aorta flow reversal", "Brief, early", "Intermediate", "Holodiastolic (end-diastolic velocity > 20 cm/s)"]],
   },
   {
-    title: "Mitral regurgitation", source: "ASE regurgitation 2017; ESC/EACTS 2021",
+    title: "Mitral regurgitation", source: "ASE regurgitation 2017; ESC/EACTS 2025",
     head: ["", "Mild", "Moderate", "Severe"], rows: [["Vena contracta (cm)", "< 0.3", "0.3–0.69", "≥ 0.7"], ["EROA (cm²), primary", "< 0.20", "0.20–0.39", "≥ 0.40"], ["Regurgitant volume (ml), primary", "< 30", "30–59", "≥ 60"], ["Pulmonary vein flow", "Systolic dominant", "Blunted", "Systolic reversal"]],
-    note: "Secondary (functional) MR: ESC 2021 treats EROA ≥ 0.20 cm² or RVol ≥ 30 ml as severe; PISA underestimates crescent-shaped orifices.",
+    note: "Secondary (functional) MR: ESC 2025 treats EROA ≥ 0.30 cm² and/or RVol ≥ 45 ml as severe (2021: ≥ 0.20 cm², ≥ 30 ml); PISA underestimates crescent-shaped orifices.",
   },
   {
     title: "Mitral stenosis", source: "EAE/ASE 2009 (ACC/AHA 2020 calls MVA ≤ 1.5 cm² severe)",
@@ -494,7 +496,7 @@ export const REFS: RefTable[] = [
       ["Grade 1", "Reduced e′ only, E/A ≤ 0.8", "Impaired relaxation, normal LAP"],
       ["2. Supplementary (if discordant)", "LARS ≤ 18%; PV S/D ≤ 0.67; LAVI > 34 ml/m²; IVRT ≤ 70 ms", "Abnormal: raised LAP. Normal: LAP likely normal. None available: LAP cannot be determined"],
     ],
-    note: "Diastolic dysfunction is present if e′ is reduced plus ≥ 1 of: E/e′ > 14, LARS ≤ 18%, E/A ≤ 0.8 or ≥ 2, LAVI > 34; or with normal e′, ≥ 2 of these. Age-adjusted e′ (septal/lateral/average): 20–39 y < 7/< 10/< 9; 40–65 y < 6/< 8/< 7; > 65 y ≤ 6/≤ 7/≤ 6.5.",
+    note: "Diastolic dysfunction is present if e′ is reduced plus ≥ 1 of: E/e′ > 14, LARS ≤ 18%, E/A ≤ 0.8 or ≥ 2, LAVI > 34; or with normal e′, ≥ 2 of these. Age-adjusted e′ (septal/lateral/average): 20–39 y < 7/< 10/< 9; 40–65 y < 6/< 8/< 7; > 65 y < 6/< 7/< 6.5. Age unknown: ≤ 6/≤ 7/≤ 6.5.",
   },
   {
     title: "Diastolic function: special situations", source: "ASE 2025 update",
