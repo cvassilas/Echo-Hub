@@ -24,6 +24,7 @@ export const LearnScreen: React.FC = () => {
       <BackBar onBack={() => setConcept(null)} title={DIAGRAMS[concept].title} />
       <div className={`${card} p-3`}><Diagram id={concept} /></div>
       {concept === "inflow" && <RealExample src="m_mv_inflow" note="Real example: normal mitral inflow (E 61 cm/s, A 53 cm/s, E/A 1.1)." />}
+      {concept === "pisa" && <RealExample src="m_mr_pisa" note="Real example: MR PISA in a zoomed apical view. Baseline shifted towards the jet (aliasing velocity 0.37 m/s), radius 0.9 cm, flow 168 ml/s, EROA 0.3 cm², regurgitant volume 54 ml: moderate primary MR, or severe if secondary (ESC)." />}
       {concept === "doppler" && <RealExample src="m_lvot_vti" note="Real example: LVOT PW Doppler, beam aligned with flow from the apical window." />}
       {concept === "inflow" && <div className={`${card} p-4`}><CaveatList ids={["mitral_inflow", "eprime", "diast_invalid"]} /></div>}
       {concept === "pisa" && <div className={`${card} p-4`}><CaveatList ids={["pisa"]} /></div>}
