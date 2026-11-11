@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Moon, Sun, Check, Plus, Trash2, ExternalLink, Search } from "lucide-react";
+import { Moon, Sun, Check, Plus, ExternalLink, Search } from "lucide-react";
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { useData, updateSettings, LinkedApp } from "../lib/store";
 import { appVersion, checkForUpdate, installUpdate, updatesEnabled, UpdateInfo } from "../lib/updates";
@@ -128,7 +128,6 @@ export const MoreScreen: React.FC = () => {
         <SectionTitle>About</SectionTitle>
         <p className="text-[12px] leading-snug text-[var(--c-text2)]">Echo Hub is a teaching and reporting aid. Reference values are restated from BSE, ASE/EACVI, ESC/ERS and related guidelines; tips and diagrams were written for this app. It isn't a medical device: check measurements and conclusions against current guidelines and your own clinical judgement.</p>
         <p className="text-[12px] leading-snug text-[var(--c-text2)]">Reports and settings stay on this phone. Don't enter patient names or hospital numbers.</p>
-        <button type="button" onClick={() => { if (confirm("Delete all saved reports and settings on this phone?")) { localStorage.removeItem("echo_hub_v1"); location.reload(); } }} className="w-full py-2 text-xs font-bold text-red-400 flex items-center justify-center gap-1"><Trash2 className="w-4 h-4" /> Delete all data on this phone</button>
       </div>
     </div>
   );
