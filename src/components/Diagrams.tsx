@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useId } from "react";
 import { Vexus, Lung, Tcd, Onsd } from "./Diagrams2";
+import { TcdPlacement, VexusPlacement, LungZones, DiaphragmPlacement, CardiacGates } from "./Diagrams3";
 
 /**
  * Original teaching diagrams drawn to look like echo images (not to scale, not real patient images).
@@ -506,6 +507,11 @@ export const DIAGRAMS: Record<string, { title: string; el: React.FC }> = {
   lung: { title: "Lung ultrasound signs", el: Lung },
   tcd: { title: "Transcranial Doppler waveforms", el: Tcd },
   onsd: { title: "Optic nerve sheath", el: Onsd },
+  tcd_place: { title: "TCD windows and MCA sampling", el: TcdPlacement },
+  vexus_place: { title: "VExUS probe and Doppler positions", el: VexusPlacement },
+  lung_zones: { title: "Lung scanning zones", el: LungZones },
+  diaphragm: { title: "Diaphragm technique", el: DiaphragmPlacement },
+  gates: { title: "Doppler sample positions", el: CardiacGates },
   inflow: { title: "Diastolic filling patterns", el: Inflow },
 };
 

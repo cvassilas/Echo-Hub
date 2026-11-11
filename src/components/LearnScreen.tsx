@@ -8,8 +8,9 @@ import { viewRefs } from "../lib/references";
 import { LECTURE_LINKS, topicVideos } from "../lib/links";
 import { PlayCircle, ExternalLink } from "lucide-react";
 
-const CONCEPTS = ["windows", "doppler", "inflow", "pisa"];
+const CONCEPTS = ["windows", "doppler", "gates", "inflow", "pisa", "vexus_place", "tcd_place", "lung_zones"];
 const VIEW_CAVEATS: Record<string, string[]> = { vexus_hv: ["vexus"], vexus_pv: ["vexus"], vexus_irv: ["vexus"], lus: ["lus", "lus_score", "effusion_vol", "diaphragm"], tcd: ["tcd"], onsd: ["onsd"] };
+const SHORT: Record<string, string> = { vexus: "Waveforms", lung: "Signs", tcd: "Waveforms", onsd: "Measurement", vexus_place: "Probe and Doppler", lung_zones: "Scan zones", diaphragm: "Diaphragm", tcd_place: "Windows", gates: "Doppler positions" };
 const GROUP_TITLE: Record<string, string> = { VExUS: "VExUS: venous congestion", Other: "Other: brain, eye and lung" };
 
 export const LearnScreen: React.FC = () => {
@@ -172,7 +173,8 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
 
 const ViewMedia: React.FC<{ v: ViewGuide }> = ({ v }) => {
   const media = v.media || [];
-  const opts = media.length ? media.map((m) => ({ key: m.src, label: m.label })) : [{ key: "diagram", label: "Diagram" }];
+  const extras = (v.diagrams || []).map((id) => ({ key: `dg:${id}`, label: SHORT[id] || DIAGRAMS[id]?.title || id }));
+  const opts = [...media.map((m) => ({ key: m.src, label: m.label })), { key: `dg:${v.diagram}`, label: media.length ? "Diagram" : SHORT[v.diagram] || "Diagram" }, ...extras];
   const [sel, setSel] = useState(opts[0].key);
   const m = media.find((x) => x.src === sel);
   return (
@@ -202,7 +204,7 @@ const ViewMedia: React.FC<{ v: ViewGuide }> = ({ v }) => {
           </div>
           <p className="text-[12px] leading-snug text-[var(--c-text2)]">{m.note || "Real normal study, anonymised: cropped to the scan sector with on-screen text removed."}</p>
         </>
-      ) : <Diagram id={v.diagram} />}
+      ) : <Diagram id={sel.startsWith("dg:") ? sel.slice(3) : v.diagram} />}
     </div>
   );
 };

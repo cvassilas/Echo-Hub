@@ -279,6 +279,8 @@ export interface ViewGuide {
   media?: Media[];
   /** Named signs and what they mean (lung ultrasound etc.) */
   signs?: [string, string][];
+  /** Extra diagrams shown alongside the main one (ids in Diagrams.tsx) */
+  diagrams?: string[];
 }
 
 export const VIEWS: ViewGuide[] = [
@@ -553,3 +555,8 @@ Object.assign(CAVEATS, EXTRA_CAVEATS);
 VIEWS.push(...EXTRA_VIEWS);
 REFS.push(...EXTRA_REFS);
 FORMULAE.push(...EXTRA_FORMULAE);
+const EXTRA_DIAGRAMS: Record<string, string[]> = {
+  vexus_hv: ["vexus_place"], vexus_pv: ["vexus_place"], vexus_irv: ["vexus_place"], lus: ["lung_zones", "diaphragm"], tcd: ["tcd_place"],
+  a4c: ["gates"], a5c: ["gates"], a3c: ["gates"],
+};
+VIEWS.forEach((v) => { if (EXTRA_DIAGRAMS[v.id]) v.diagrams = EXTRA_DIAGRAMS[v.id]; });

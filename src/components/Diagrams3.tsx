@@ -78,7 +78,7 @@ export const TcdPlacement = () => (
       <ellipse cx={56} cy={110} rx={7} ry={9} fill="none" stroke={LINE} />
       <rect x={60} y={86} width={30} height={20} rx={5} fill="none" stroke={DOP} strokeDasharray="3 2" />
       <Probe x={75} y={96} r={0} />
-      <T x={75} y={80} t="Temporal window" s={8.5} c={DOP} />
+      <T x={75} y={76} t="Temporal window" s={8.5} c={DOP} />
       <circle cx={108} cy={84} r={9} fill="none" stroke={DOP} strokeDasharray="3 2" />
       <T x={124} y={70} t="Orbital" s={8} c={DOP} a="end" />
       <rect x={36} y={150} width={16} height={12} rx={4} fill="none" stroke={DOP} strokeDasharray="3 2" />
@@ -116,41 +116,41 @@ export const TcdPlacement = () => (
 export const VexusPlacement = () => (
   <Svg h={316} label="VExUS probe positions and Doppler sample sites">
     <TorsoFront x={58} y={86} s={0.95} />
-    <Probe x={74} y={92} r={-30} label="1 Subcostal" lx={110} ly={112} la="start" />
-    <Probe x={16} y={70} r={90} label="2 R mid-axillary" lx={10} ly={44} la="start" />
-    <Probe x={10} y={120} r={80} label="3 R posterior axillary" lx={4} ly={156} la="start" />
+    <Probe x={50} y={94} r={30} label="1" lx={40} ly={112} />
+    <Probe x={16} y={70} r={90} label="2" lx={28} ly={60} />
+    <Probe x={10} y={120} r={80} label="3" lx={24} ly={132} />
     <T x={120} y={20} t="Patient's right is on the left of the picture" s={7.5} c={MUTED} a="start" />
-    <T x={120} y={34} t="1  IVC and hepatic veins (or coronal via 2)" s={8.5} c="#dfe6e8" a="start" />
-    <T x={120} y={48} t="2  Portal vein at the liver hilum" s={8.5} c="#dfe6e8" a="start" />
-    <T x={120} y={62} t="3  Right kidney: interlobar vessels" s={8.5} c="#dfe6e8" a="start" />
+    <T x={120} y={34} t="1  Subcostal: IVC and hepatic veins" s={8.5} c="#dfe6e8" a="start" />
+    <T x={120} y={48} t="2  R mid-axillary: portal vein (hilum)" s={8.5} c="#dfe6e8" a="start" />
+    <T x={120} y={62} t="3  R posterior axillary: right kidney" s={8.5} c="#dfe6e8" a="start" />
     <T x={120} y={80} t="ECG on for all three; breath hold" s={8.5} c={CAL} a="start" />
 
     {/* Hepatic vein panel */}
     <g>
-      <Sector x={52} y={180} r={112} spread={34} id="vx1">
+      <Sector x={52} y={180} r={100} spread={25} id="vx1">
         <rect x={0} y={180} width={110} height={120} fill={TISSUE} />
         <path d="M42,180 L42,300 L62,300 L62,180 Z" fill={DARK} />
         <path d="M62,232 Q80,252 98,278 L90,284 Q74,260 58,244 Z" fill={BLUE} opacity={0.85} />
       </Sector>
       <Beam x1={52} y1={180} x2={76} y2={258} />
       <Gate x={73} y={250} ang={-17} />
-      <T x={52} y={308} t="Hepatic vein: gate 1–2 cm from IVC" s={8} c={DOP} />
+      <T x={52} y={300} t="Hepatic vein" s={8.5} c={DOP} b /><T x={52} y={311} t="1–2 cm from IVC" s={7.8} c={MUTED} />
       <T x={26} y={200} t="IVC" s={7.5} c={MUTED} />
     </g>
     {/* Portal vein panel */}
     <g>
-      <Sector x={150} y={180} r={112} spread={34} id="vx2">
+      <Sector x={150} y={180} r={100} spread={25} id="vx2">
         <rect x={90} y={180} width={130} height={120} fill={TISSUE} />
         <path d="M110,250 Q150,240 196,250 L196,262 Q150,252 110,262 Z" fill={RED} opacity={0.85} stroke={WHITE} strokeWidth={1.4} />
       </Sector>
       <Beam x1={150} y1={180} x2={160} y2={251} />
       <Gate x={159} y={246} ang={-8} />
-      <T x={150} y={308} t="Portal vein: gate mid-vessel, angle < 60°" s={8} c={DOP} />
-      <T x={192} y={240} t="bright walls" s={7} c={MUTED} a="end" />
+      <T x={150} y={300} t="Portal vein" s={8.5} c={DOP} b /><T x={150} y={311} t="mid-vessel, angle < 60°" s={7.8} c={MUTED} />
+      <T x={150} y={234} t="bright walls" s={7} c={MUTED} />
     </g>
     {/* Kidney panel */}
     <g>
-      <Sector x={248} y={180} r={112} spread={34} id="vx3">
+      <Sector x={248} y={180} r={100} spread={25} id="vx3">
         <rect x={190} y={180} width={120} height={120} fill={TISSUE} />
         <ellipse cx={248} cy={256} rx={34} ry={24} fill="#30383b" stroke={WHITE} strokeWidth={0.8} />
         <ellipse cx={248} cy={258} rx={14} ry={9} fill="#9aa4a8" />
@@ -159,7 +159,7 @@ export const VexusPlacement = () => (
       </Sector>
       <Beam x1={248} y1={180} x2={245} y2={242} />
       <Gate x={245} y={243} ang={3} />
-      <T x={248} y={308} t="Kidney: gate on artery + vein together" s={8} c={DOP} />
+      <T x={248} y={300} t="Intrarenal" s={8.5} c={DOP} b /><T x={248} y={311} t="artery + vein in one gate" s={7.8} c={MUTED} />
     </g>
   </Svg>
 );
@@ -168,7 +168,6 @@ export const VexusPlacement = () => (
 export const LungZones = () => (
   <Svg h={238} label="Lung ultrasound scanning zones">
     <TorsoFront x={78} y={110} s={1.05} />
-    {[[-1, 1]].map(() => null)}
     {/* anterior zones: between sternum and anterior axillary line, split by nipple line */}
     {[-1, 1].map((side) => (
       <g key={side}>
@@ -192,8 +191,8 @@ export const LungZones = () => (
       <T x={233} y={30} t="Side: lateral and posterior" s={8.5} c="#dfe6e8" />
       <T x={212} y={208} t="anterior" s={7} c={MUTED} />
       <T x={268} y={208} t="posterior" s={7} c={MUTED} />
-      <T x={240} y={222} t="● PLAPS point (posterolateral, base)" s={8} c={RED} />
-      <T x={240} y={233} t="12 zones = 3 per side × upper/lower × 2 sides" s={7.5} c={MUTED} />
+      <T x={236} y={222} t="● PLAPS point" s={8} c={RED} />
+      <T x={236} y={233} t="12 zones: 3 × 2 per side" s={7.5} c={MUTED} />
     </g>
   </Svg>
 );
@@ -207,8 +206,8 @@ export const DiaphragmPlacement = () => (
     <T x={46} y={138} t="subcostal mid-clavicular," s={8} c={CAL} />
     <T x={46} y={148} t="aim at the dome" s={8} c={CAL} />
     <Probe x={8} y={86} r={90} w={12} />
-    <T x={6} y={62} t="Thickness: linear," s={8} c={DOP} a="start" />
-    <T x={6} y={72} t="8–10th ICS mid-axillary" s={8} c={DOP} a="start" />
+    <T x={6} y={186} t="Thickness (left probe): linear," s={8} c={DOP} a="start" />
+    <T x={6} y={196} t="8–10th ICS mid-axillary" s={8} c={DOP} a="start" />
     {/* M-mode */}
     <g>
       <rect x={140} y={22} width={150} height={78} fill="#15191c" stroke={LINE} />
@@ -233,9 +232,11 @@ export const DiaphragmPlacement = () => (
 );
 
 // ---------- Cardiac Doppler sample positions ----------
+const Num: React.FC<{ x: number; y: number; n: string; c: string }> = ({ x, y, n, c }) => (
+  <g><circle cx={x} cy={y} r={6} fill={BG} stroke={c} strokeWidth={1.2} /><T x={x} y={y + 3} t={n} s={8} c={c} b /></g>
+);
 export const CardiacGates = () => (
-  <Svg h={240} label="Cardiac Doppler sample positions">
-    {/* A4C */}
+  <Svg h={268} label="Cardiac Doppler sample positions">
     <g>
       <T x={74} y={14} t="Apical 4 chamber" s={9} b />
       <path d="M74,22 L10,178 A170,170 0 0,0 138,178 Z" fill="#15191c" stroke={LINE} />
@@ -244,20 +245,14 @@ export const CardiacGates = () => (
       <ellipse cx={92} cy={140} rx={18} ry={22} fill={DARK} stroke="#8d979b" strokeWidth={2} />
       <ellipse cx={58} cy={140} rx={14} ry={20} fill={DARK} stroke="#8d979b" strokeWidth={2} />
       <path d="M80,114 L88,124 M104,114 L98,124" stroke={WHITE} strokeWidth={2} />
-      <T x={96} y={84} t="LV" s={8} c={MUTED} /><T x={58} y={84} t="RV" s={8} c={MUTED} />
-      <T x={92} y={144} t="LA" s={8} c={MUTED} /><T x={58} y={144} t="RA" s={8} c={MUTED} />
+      <T x={95} y={70} t="LV" s={8} c={MUTED} /><T x={58} y={78} t="RV" s={8} c={MUTED} />
+      <T x={92} y={152} t="LA" s={8} c={MUTED} /><T x={58} y={152} t="RA" s={8} c={MUTED} />
       <Beam x1={74} y1={22} x2={92} y2={122} />
-      <Gate x={91} y={118} ang={-10} c={DOP} />
-      <T x={140} y={104} t="① Mitral E/A: leaflet tips" s={8} c={DOP} a="end" />
-      <Gate x={80} y={113} ang={0} c={CAL} />
-      <Gate x={105} y={113} ang={0} c={CAL} />
-      <T x={140} y={126} t="② e′: septal + lateral annulus" s={8} c={CAL} a="end" />
-      <Beam x1={74} y1={22} x2={63} y2={126} c={RED} />
-      <T x={8} y={60} t="③ TR CW" s={8} c={RED} a="start" />
-      <Gate x={104} y={160} ang={-30} c={WHITE} />
-      <T x={140} y={174} t="④ Pulm. vein: 1–2 cm in" s={8} c={WHITE} a="end" />
+      <Gate x={91} y={118} ang={-10} c={DOP} /><Num x={124} y={100} n="1" c={DOP} /><line x1={118} y1={103} x2={96} y2={116} stroke={DOP} strokeWidth={0.7} />
+      <Gate x={80} y={113} c={CAL} /><Gate x={105} y={113} c={CAL} /><Num x={124} y={124} n="2" c={CAL} /><line x1={118} y1={122} x2={110} y2={115} stroke={CAL} strokeWidth={0.7} />
+      <Beam x1={74} y1={22} x2={63} y2={126} c={RED} /><Num x={30} y={100} n="3" c={RED} /><line x1={36} y1={102} x2={63} y2={118} stroke={RED} strokeWidth={0.7} />
+      <Gate x={104} y={160} ang={-30} c={WHITE} /><Num x={128} y={160} n="4" c={WHITE} />
     </g>
-    {/* A5C */}
     <g>
       <T x={226} y={14} t="Apical 5 chamber" s={9} b />
       <path d="M226,22 L162,178 A170,170 0 0,0 290,178 Z" fill="#15191c" stroke={LINE} />
@@ -265,17 +260,19 @@ export const CardiacGates = () => (
       <path d="M224,40 Q200,70 202,112 L220,112 Q222,70 224,40 Z" fill={DARK} stroke="#8d979b" strokeWidth={4} />
       <path d="M232,116 Q232,132 228,146 L240,146 Q244,132 246,116 Z" fill={DARK} stroke="#8d979b" strokeWidth={2} />
       <path d="M230,130 L238,124 M246,130 L238,124" stroke={WHITE} strokeWidth={1.8} />
-      <ellipse cx={262} cy={150} rx={16} ry={18} fill={DARK} stroke="#8d979b" strokeWidth={2} />
-      <T x={246} y={84} t="LV" s={8} c={MUTED} /><T x={234} y={160} t="Ao" s={8} c={MUTED} />
+      <ellipse cx={266} cy={150} rx={14} ry={16} fill={DARK} stroke="#8d979b" strokeWidth={2} />
+      <T x={246} y={70} t="LV" s={8} c={MUTED} /><T x={220} y={160} t="Ao" s={8} c={MUTED} /><T x={266} y={153} t="LA" s={8} c={MUTED} />
       <Beam x1={226} y1={22} x2={238} y2={140} />
-      <Gate x={237} y={117} ang={-6} c={DOP} />
-      <T x={168} y={104} t="⑤ LVOT PW:" s={8} c={DOP} a="start" />
-      <T x={168} y={114} t="0.5–1 cm below AV" s={8} c={DOP} a="start" />
-      <T x={168} y={140} t="⑥ AV CW through" s={8} c={CAL} a="start" />
-      <T x={168} y={150} t="the valve (+ other windows)" s={8} c={CAL} a="start" />
+      <Gate x={237} y={117} ang={-6} c={DOP} /><Num x={196} y={116} n="5" c={DOP} /><line x1={202} y1={116} x2={231} y2={117} stroke={DOP} strokeWidth={0.7} />
+      <Num x={196} y={136} n="6" c={CAL} /><line x1={202} y1={136} x2={232} y2={134} stroke={CAL} strokeWidth={0.7} />
     </g>
-    <T x={150} y={196} t="Align the cursor with flow (< 20°); colour first, then PW/CW" s={8} c={MUTED} />
-    <T x={150} y={208} t="IVRT: CW/PW between LVOT and mitral inflow (A5C)" s={8} c={MUTED} />
-    <T x={150} y={222} t="RVOT VTI: PSAX AV level, PW just below the pulmonary valve" s={8} c={MUTED} />
+    {([
+      ["1", DOP, "Mitral E/A: PW at the leaflet tips", 6, 196], ["2", CAL, "e′: TDI at septal and lateral annulus", 6, 210], ["3", RED, "TR: CW through the jet (colour first)", 6, 224],
+      ["4", WHITE, "Pulmonary vein: PW 1–2 cm into RUPV", 154, 196], ["5", DOP, "LVOT VTI: PW 0.5–1 cm below the AV", 154, 210], ["6", CAL, "AV: CW through the valve", 154, 224],
+    ] as const).map(([n, c, t, x, y]) => (
+      <g key={n}><Num x={x + 6} y={y - 3} n={n} c={c} /><T x={x + 16} y={y} t={t} s={7.8} c="#dfe6e8" a="start" /></g>
+    ))}
+    <T x={150} y={246} t="Keep the cursor within 20° of flow. IVRT: between LVOT and inflow (A5C)." s={7.8} c={MUTED} />
+    <T x={150} y={259} t="RVOT VTI: PSAX AV level, PW just below the pulmonary valve." s={7.8} c={MUTED} />
   </Svg>
 );
