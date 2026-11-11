@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { REFS, FORMULAE } from "../lib/content";
-import { card, inputCls, SectionTitle } from "./ui";
+import { card, inputCls, SectionTitle, RefList } from "./ui";
+import { tableRefs, REFERENCES } from "../lib/references";
 
 export const RefScreen: React.FC = () => {
   const [q, setQ] = useState("");
@@ -33,6 +34,7 @@ export const RefScreen: React.FC = () => {
             </table>
           </div>
           {t.note && <p className="text-[11px] leading-snug text-[var(--c-muted)]">{t.note}</p>}
+          <RefList keys={tableRefs(t.title)} />
         </div>
       ))}
       {formulae.length > 0 && (
@@ -46,6 +48,12 @@ export const RefScreen: React.FC = () => {
             </div>
           ))}
         </div>
+      )}
+      {!ql && (
+        <details className={`${card} p-3`}>
+          <summary className="text-[14px] font-bold text-[var(--c-teal)] cursor-pointer">All references ({Object.keys(REFERENCES).length})</summary>
+          <RefList keys={Object.keys(REFERENCES).sort((a, b) => REFERENCES[a].cite.localeCompare(REFERENCES[b].cite))} title="" />
+        </details>
       )}
       <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Values restated from the cited guidelines for quick reference. Check the source documents for full criteria and updates.</p>
     </div>

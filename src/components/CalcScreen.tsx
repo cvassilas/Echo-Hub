@@ -44,10 +44,10 @@ const ADVANCED: Calc[] = [
         { label: "Ea/Ees, single beat", value: rC, unit: "", dp: 2, grade: rC ? vacGrade(rC) : null },
         { label: "Ea/Ees, simplified (ESV/SV)", value: rS, unit: "", dp: 2, grade: rS ? vacGrade(rS) : null, note: rS ? `Simplified Ees (ESP/ESV) ${fmt(eesS, 2)} mmHg/ml. Trend only.` : undefined },
       ]; } },
-  { id: "pvr", group: "Haemodynamics and coupling", title: "Pulmonary vascular resistance", caveats: ["trv"],
+  { id: "pvr", group: "Haemodynamics and coupling", title: "Pulmonary vascular resistance", caveats: ["pvr", "trv"],
     inputs: [{ k: "trv", label: "TR Vmax", unit: "m/s" }, { k: "vti", label: "RVOT VTI", unit: "cm" }],
     run: ({ trv, vti }) => { const p = trv && vti ? (10 * trv) / vti + 0.16 : undefined; return [{ label: "TRV / RVOT VTI", value: trv && vti ? trv / vti : undefined, unit: "", dp: 3 }, { label: "PVR (Abbas)", value: p, unit: "WU", dp: 1, grade: p === undefined ? null : p <= 2 ? gr("normal", "≤ 2 WU") : p <= 5 ? gr("moderate", "Raised (> 2 WU)") : gr("severe", "Markedly raised (> 5 WU)"), note: "Underestimates when PVR is very high (> 8 WU)." }]; } },
-  { id: "svr", group: "Haemodynamics and coupling", title: "Systemic vascular resistance",
+  { id: "svr", group: "Haemodynamics and coupling", title: "Systemic vascular resistance", caveats: ["svr", "lvot_d"],
     inputs: [{ k: "map", label: "MAP", unit: "mmHg" }, { k: "rap", label: "RAP / CVP", unit: "mmHg" }, { k: "co", label: "Cardiac output", unit: "L/min" }, { k: "bsa", label: "BSA (optional)", unit: "m²" }],
     run: ({ map, rap, co, bsa }) => { const v = map && co ? (80 * (map - (rap ?? 0))) / co : undefined; return [
       { label: "SVR", value: v, unit: "dyn·s/cm⁵", dp: 0, grade: v === undefined ? null : v < 800 ? gr("moderate", "Low (vasodilated)") : v > 1200 ? gr("moderate", "High (vasoconstricted)") : gr("normal", "800–1200") },
@@ -119,7 +119,7 @@ const ADVANCED: Calc[] = [
 ];
 
 const BASIC: Calc[] = [
-  { id: "bsa", title: "Body surface area", inputs: [{ k: "h", label: "Height", unit: "cm" }, { k: "w", label: "Weight", unit: "kg" }],
+  { id: "bsa", title: "Body surface area", caveats: ["bsa"], inputs: [{ k: "h", label: "Height", unit: "cm" }, { k: "w", label: "Weight", unit: "kg" }],
     run: ({ h, w }) => [{ label: "BSA (Mosteller)", value: bsaMosteller(h, w), unit: "m²", dp: 2 }, { label: "BSA (DuBois)", value: h && w ? 0.007184 * w ** 0.425 * h ** 0.725 : undefined, unit: "m²", dp: 2 }] },
   { id: "sv", title: "Stroke volume and cardiac output", caveats: ["lvot_d", "lvot_vti"],
     inputs: [{ k: "d", label: "LVOT diameter", unit: "cm" }, { k: "vti", label: "LVOT VTI", unit: "cm" }, { k: "hr", label: "Heart rate", unit: "bpm" }, { k: "bsa", label: "BSA (optional)", unit: "m²" }],
@@ -158,7 +158,7 @@ const BASIC: Calc[] = [
   { id: "ms", title: "Mitral valve area (pressure half-time)", caveats: ["ms_grade"],
     inputs: [{ k: "pht", label: "Pressure half-time", unit: "ms" }],
     run: ({ pht }) => [{ label: "MVA", value: pht ? 220 / pht : undefined, unit: "cm²", dp: 1, grade: pht ? DERIVED_GRADERS.mva_pht!(220 / pht, {}) : null }] },
-  { id: "bern", title: "Pressure gradient (Bernoulli)", inputs: [{ k: "v", label: "Peak velocity", unit: "m/s" }, { k: "v1", label: "Proximal velocity (optional)", unit: "m/s" }],
+  { id: "bern", title: "Pressure gradient (Bernoulli)", caveats: ["bernoulli"], inputs: [{ k: "v", label: "Peak velocity", unit: "m/s" }, { k: "v1", label: "Proximal velocity (optional)", unit: "m/s" }],
     run: ({ v, v1 }) => [{ label: "Simplified 4V²", value: v ? 4 * v * v : undefined, unit: "mmHg", dp: 0 }, { label: "Modified 4(V2² − V1²)", value: v && v1 ? 4 * (v * v - v1 * v1) : undefined, unit: "mmHg", dp: 0, note: "Use when the proximal velocity is > 1.5 m/s." }] },
   { id: "lvmass", title: "LV mass and geometry", caveats: ["linear_lv"],
     inputs: [{ k: "ivs", label: "IVSd", unit: "cm" }, { k: "lvid", label: "LVIDd", unit: "cm" }, { k: "pw", label: "LVPWd", unit: "cm" }, { k: "bsa", label: "BSA", unit: "m²" }, { k: "sex", label: "Sex", unit: "", options: ["", "M", "F"] }],
@@ -173,7 +173,7 @@ const BASIC: Calc[] = [
   { id: "la", title: "LA volume (area-length)", caveats: ["la_vol"],
     inputs: [{ k: "a1", label: "A4C LA area", unit: "cm²" }, { k: "a2", label: "A2C LA area", unit: "cm²" }, { k: "l", label: "Shorter LA length", unit: "cm" }, { k: "bsa", label: "BSA", unit: "m²" }],
     run: ({ a1, a2, l, bsa }) => { const vol = a1 && a2 && l ? (0.85 * a1 * a2) / l : undefined; return [{ label: "LA volume", value: vol, unit: "ml", dp: 0 }, { label: "LAVI", value: vol && bsa ? vol / bsa : undefined, unit: "ml/m²", dp: 0, grade: vol && bsa ? DERIVED_GRADERS.lavi!(vol / bsa, {}) : null }]; } },
-  { id: "qpqs", title: "Shunt ratio (Qp:Qs)",
+  { id: "qpqs", title: "Shunt ratio (Qp:Qs)", caveats: ["qpqs", "lvot_d"],
     inputs: [{ k: "rd", label: "RVOT diameter", unit: "cm" }, { k: "rvti", label: "RVOT VTI", unit: "cm" }, { k: "ld", label: "LVOT diameter", unit: "cm" }, { k: "lvti", label: "LVOT VTI", unit: "cm" }],
     run: ({ rd, rvti, ld, lvti }) => { const qp = area(rd) && rvti ? area(rd)! * rvti : undefined; const qs = area(ld) && lvti ? area(ld)! * lvti : undefined; return [{ label: "Qp:Qs", value: qp && qs ? qp / qs : undefined, unit: "", dp: 2, note: "> 1.5 suggests a significant left-to-right shunt." }]; } },
   { id: "ee", title: "E/e′ and E/A", caveats: ["diast_invalid", "eprime"],

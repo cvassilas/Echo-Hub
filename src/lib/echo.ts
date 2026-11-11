@@ -194,6 +194,12 @@ export const FIELDS: FieldDef[] = [
   { key: "tamponade", label: "Tamponade features", section: "peri", kind: "select", options: ["", "None", "RA systolic collapse", "RV diastolic collapse", "Plethoric IVC + chamber collapse", "Exaggerated respiratory variation"], caveats: ["effusion"] },
 ];
 
+const FIELD_CAVEAT_FILL: Record<string, string[]> = {
+  sex: ["reference_ranges"], age: ["reference_ranges"], height: ["bsa", "reference_ranges"], weight: ["bsa"], hr: ["rhythm"], rhythm: ["rhythm"], quality: ["image_quality"],
+  rwma: ["rwma"], rv_wall: ["rv_wall"], la_area: ["la_vol"], av_morph: ["as_grade"], dt: ["mitral_inflow"], pv_sd: ["pv_flow"], pv_notch: ["pvat"], pa_d: ["pa_size"], pr: ["regurg"],
+};
+FIELDS.forEach((f) => { if (!f.caveats?.length && FIELD_CAVEAT_FILL[f.key]) f.caveats = FIELD_CAVEAT_FILL[f.key]; });
+
 export const FIELD = Object.fromEntries(FIELDS.map((f) => [f.key, f])) as Record<string, FieldDef>;
 
 // ---------- Helpers ----------

@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { ChevronRight, ArrowLeft, Search } from "lucide-react";
 import { VIEWS, CAVEATS, ViewGuide } from "../lib/content";
 import { Diagram, DIAGRAMS } from "./Diagrams";
-import { card, inputCls, Bullets, SectionTitle, CaveatList } from "./ui";
+import { card, inputCls, Bullets, SectionTitle, CaveatList, RefList } from "./ui";
+import { viewRefs } from "../lib/references";
 
 const CONCEPTS = ["windows", "doppler", "inflow", "pisa"];
 const VIEW_CAVEATS: Record<string, string[]> = { vexus_hv: ["vexus"], vexus_pv: ["vexus"], vexus_irv: ["vexus"], lus: ["lus", "lus_score", "effusion_vol", "diaphragm"], tcd: ["tcd"], onsd: ["onsd"] };
@@ -31,6 +32,8 @@ export const LearnScreen: React.FC = () => {
       {concept === "inflow" && <div className={`${card} p-4`}><CaveatList ids={["mitral_inflow", "eprime", "diast_invalid"]} /></div>}
       {concept === "pisa" && <div className={`${card} p-4`}><CaveatList ids={["pisa"]} /></div>}
       {concept === "doppler" && <div className={`${card} p-4`}><Bullets items={["Doppler measures only the component of velocity along the beam: measured = true × cos θ.", "Keep θ under 20° for velocities used in gradients (AS, TR, RVSP) and VTI.", "Angle correction is not recommended for cardiac Doppler; move the probe or change window instead.", "Colour Doppler first shows the jet direction; then line up the CW or PW cursor with it."]} /></div>}
+      {concept === "doppler" && <div className={`${card} p-4`}><RefList keys={["quinones2002"]} /></div>}
+      {concept === "windows" && <div className={`${card} p-4`}><RefList keys={["bseMds2020", "mitchell2019"]} /></div>}
       {concept === "windows" && <div className={`${card} p-4`}><Bullets items={["Parasternal: left sternal edge, 3rd–4th space, patient rolled left, left arm above the head.", "Apical: at the apex beat, often lower and more lateral than expected; steep left lateral position.", "Subcostal: below the xiphisternum, knees bent. Often best in ventilated or COPD patients.", "Suprasternal: neck extended, probe in the notch, pointing down."]} /></div>}
     </div>
   );
@@ -150,6 +153,7 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
     <Block title="Measure here" items={v.measure} color="#F2B33D" />
     <Block title="Pitfalls" items={v.pitfalls} color="#E05A4F" />
     {VIEW_CAVEATS[v.id] && <div className={`${card} p-4`}><CaveatList ids={VIEW_CAVEATS[v.id]} /></div>}
+    <div className={`${card} p-4`}><RefList keys={viewRefs(v.id, v.group)} title="Further reading" /></div>
     </div>
     </div>
   </div>

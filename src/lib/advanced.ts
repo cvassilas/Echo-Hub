@@ -6,6 +6,104 @@
 import type { Caveat, ViewGuide, RefTable } from "./content";
 
 export const EXTRA_CAVEATS: Record<string, Caveat> = {
+  pvr: {
+    title: "Pulmonary vascular resistance (Doppler estimate)",
+    points: [
+      "Abbas 2003: PVR (Wood units) ≈ 10 × TR Vmax (m/s) / RVOT VTI (cm) + 0.16. The ratio TRV/RVOT VTI rises as resistance rises relative to flow.",
+      "Distinguishes high PA pressure from high flow (pressure high but PVR normal) versus pulmonary vascular disease. ESC/ERS 2022 uses PVR > 2 WU in the haemodynamic definition of pre-capillary PH.",
+      "Less accurate at very high PVR (> 8 WU) and needs a good TR envelope and RVOT PW just below the pulmonary valve.",
+    ],
+  },
+  bsa: {
+    title: "Body surface area and indexing",
+    points: [
+      "Mosteller: BSA = √(height cm × weight kg / 3600). DuBois gives similar values in most adults.",
+      "Volumes, mass and valve areas are indexed to BSA so they can be compared between people of different size.",
+      "In obesity, BSA indexing under-calls dilatation (it over-corrects). BSE indexes aortic size to height for this reason.",
+    ],
+  },
+  bernoulli: {
+    title: "Bernoulli equation",
+    points: [
+      "Simplified: ΔP = 4V² (V in m/s, ΔP in mmHg). It ignores the proximal velocity, flow acceleration and viscous losses.",
+      "Use the modified form 4(V2² − V1²) when the proximal velocity is above about 1.5 m/s (for example LVOT obstruction in series with AS, or high-output states).",
+      "Peak instantaneous Doppler gradients are higher than catheter peak-to-peak gradients; mean gradients agree better.",
+      "Pressure recovery in a small aorta (< 3 cm) makes Doppler overestimate AS severity.",
+    ],
+  },
+  qpqs: {
+    title: "Qp:Qs (shunt ratio)",
+    points: [
+      "Qp = RVOT area × RVOT VTI (pulmonary flow); Qs = LVOT area × LVOT VTI (systemic flow).",
+      "> 1.5 suggests a haemodynamically significant left-to-right shunt (ASD, VSD, PDA); < 1 suggests net right-to-left flow.",
+      "Errors in either diameter are squared; the RVOT diameter is the least reliable measurement. Significant regurgitation of the valves used invalidates the calculation.",
+    ],
+  },
+  svr: {
+    title: "Systemic vascular resistance",
+    points: [
+      "SVR = 80 × (MAP − RAP) / cardiac output, in dyn·s/cm⁵. Normal about 800–1200.",
+      "Uses the echo cardiac output (LVOT area × VTI × HR), so LVOT diameter errors carry through.",
+      "Helpful to describe a shock state (vasodilated vs vasoconstricted) but it's derived, not measured: interpret with the clinical picture.",
+    ],
+  },
+  rwma: {
+    title: "Regional wall motion",
+    points: [
+      "Use the 17-segment model and score each segment: normal, hypokinetic, akinetic or dyskinetic (aneurysmal).",
+      "Judge thickening as well as inward motion; tethering and translation can make a passive segment look as if it moves.",
+      "Patterns that follow a coronary territory suggest ischaemia; apical ballooning sparing the base suggests Takotsubo; a regional pattern can also follow LBBB, pacing or septal post-operative motion.",
+      "Off-axis or foreshortened views create false regional abnormalities, especially at the apex.",
+    ],
+  },
+  rv_wall: {
+    title: "RV free wall thickness",
+    points: [
+      "Measure in diastole in the subcostal view (or PLAX), at the level of the tricuspid chordae, excluding trabeculation and epicardial fat.",
+      "> 5 mm suggests RV hypertrophy: chronic pressure load (chronic PH, pulmonary stenosis) or infiltration. Acute pressure load (PE) usually has a thin wall.",
+    ],
+  },
+  pv_flow: {
+    title: "Pulmonary vein flow",
+    points: [
+      "PW sample 1–2 cm into the right upper pulmonary vein from the A4C view, with colour to align.",
+      "S/D ratio ≤ 0.67 (systolic blunting) supports raised LA pressure in reduced EF; in normal EF it can be > 0.67 despite raised pressure. Young people normally have prominent D waves.",
+      "Ar duration exceeding mitral A duration by > 30 ms suggests raised LV end-diastolic pressure.",
+      "AF removes the Ar wave and blunts S without implying raised pressure.",
+    ],
+  },
+  pa_size: {
+    title: "Pulmonary artery size",
+    points: [
+      "Measure the main PA in the PSAX view at end-diastole, midway between the valve and the bifurcation.",
+      "ESC/ERS 2022 counts a PA diameter > 25 mm, or larger than the aortic root, as a supporting sign of pulmonary hypertension.",
+      "A large PA is common in long-standing PH and doesn't shrink quickly with treatment.",
+    ],
+  },
+  rhythm: {
+    title: "Rhythm and heart rate",
+    points: [
+      "In AF, average measurements over 5–10 beats (or use an index beat after two similar RR intervals). Diastolic grading uses AF-specific criteria and LA strain isn't used.",
+      "Fast heart rates fuse E and A waves; slow rates exaggerate stroke volume and VTI. Record the HR with Doppler measurements.",
+      "Paced rhythm and LBBB make septal motion and septal e′ unreliable.",
+    ],
+  },
+  image_quality: {
+    title: "Image quality and limited studies",
+    points: [
+      "State the image quality and which views were not obtained; 'not seen' is not the same as 'normal'.",
+      "Use contrast when two or more contiguous LV segments are not seen and the answer matters.",
+      "A focused (FUSIC-style) scan answers specific questions; it doesn't replace a full departmental study when one is needed.",
+    ],
+  },
+  reference_ranges: {
+    title: "Why sex, age and size matter",
+    points: [
+      "BSE 2020 and ASE/EACVI 2015 give separate male and female ranges for chamber size, mass and function; without sex, grading falls back to the less specific limit or is left ungraded.",
+      "Diastolic e′ cut-offs are age-specific (ASE 2025).",
+      "Height and weight give BSA for indexing, and height alone for BSE aortic indexing.",
+    ],
+  },
   rvpa: {
     title: "RV–PA coupling (TAPSE/sPAP)",
     points: [

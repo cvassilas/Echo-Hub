@@ -2,6 +2,7 @@ import React from "react";
 import { Info } from "lucide-react";
 import { Grade, Level } from "../lib/echo";
 import { CAVEATS } from "../lib/content";
+import { REFERENCES, CAVEAT_REFS } from "../lib/references";
 
 export const card = "bg-[var(--c-surface)] rounded-[24px]";
 export const inputCls = "w-full bg-[var(--c-surface2)] text-[var(--c-text)] placeholder-[var(--c-muted)] border-0 border-b-2 border-[var(--c-border2)] focus:border-[var(--c-teal)] rounded-t-xl rounded-b-none px-3.5 py-2.5 text-[15px] outline-none transition-colors [color-scheme:var(--c-scheme)]";
@@ -31,6 +32,24 @@ export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; chil
   </div>
 );
 
+/** Numbered source list; each item opens the paper or guideline. */
+export const RefList: React.FC<{ keys: string[]; title?: string }> = ({ keys, title = "Sources" }) => {
+  const list = keys.filter((k) => REFERENCES[k]);
+  if (!list.length) return null;
+  return (
+    <div className="mt-2">
+      <p className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--c-muted)] mb-1">{title}</p>
+      <ol className="space-y-1 list-decimal pl-4">
+        {list.map((k) => (
+          <li key={k} className="text-[11px] leading-snug text-[var(--c-text2)]">
+            <a href={REFERENCES[k].url} target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--c-border2)] underline-offset-2">{REFERENCES[k].cite}</a>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+};
+
 export const CaveatList: React.FC<{ ids: string[] }> = ({ ids }) => (
   <div className="space-y-4">
     {ids.map((id) => CAVEATS[id] && (
@@ -39,6 +58,7 @@ export const CaveatList: React.FC<{ ids: string[] }> = ({ ids }) => (
         <ul className="space-y-1.5">
           {CAVEATS[id].points.map((p, i) => <li key={i} className="text-[13px] leading-snug text-[var(--c-text2)] pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-[var(--c-teal)]">{p}</li>)}
         </ul>
+        <RefList keys={CAVEAT_REFS[id] || []} />
       </div>
     ))}
   </div>
