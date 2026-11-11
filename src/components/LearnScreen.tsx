@@ -5,6 +5,8 @@ import { Diagram, DIAGRAMS } from "./Diagrams";
 import { card, inputCls, Bullets, SectionTitle, CaveatList } from "./ui";
 
 const CONCEPTS = ["windows", "doppler", "inflow", "pisa"];
+const VIEW_CAVEATS: Record<string, string[]> = { vexus_hv: ["vexus"], vexus_pv: ["vexus"], vexus_irv: ["vexus"], lus: ["lus", "lus_score", "effusion_vol", "diaphragm"], tcd: ["tcd"], onsd: ["onsd"] };
+const GROUP_TITLE: Record<string, string> = { VExUS: "VExUS: venous congestion", Other: "Other: brain, eye and lung" };
 
 export const LearnScreen: React.FC = () => {
   const [view, setView] = useState<ViewGuide | null>(null);
@@ -34,7 +36,7 @@ export const LearnScreen: React.FC = () => {
   );
 
   const ql = q.trim().toLowerCase();
-  const views = VIEWS.filter((v) => !ql || [v.name, ...v.structures, ...v.measure, ...v.optimise, ...v.pitfalls, ...(v.fixes || []).flat()].join(" ").toLowerCase().includes(ql));
+  const views = VIEWS.filter((v) => !ql || [v.name, ...v.structures, ...v.measure, ...v.optimise, ...v.pitfalls, ...(v.fixes || []).flat(), ...(v.signs || []).flat()].join(" ").toLowerCase().includes(ql));
   const cav = Object.entries(CAVEATS).filter(([, c]) => !ql || [c.title, ...c.points].join(" ").toLowerCase().includes(ql));
   const groups = Array.from(new Set(VIEWS.map((v) => v.group)));
 
@@ -48,7 +50,7 @@ export const LearnScreen: React.FC = () => {
       {!ql && (
         <div className={`${card} p-3`}>
           <SectionTitle>Concepts</SectionTitle>
-          <div className="grid grid-cols-2 gap-2 mt-2">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
             {CONCEPTS.map((c) => (
               <button key={c} type="button" onClick={() => setConcept(c)} className="text-left bg-[var(--c-surface2)] rounded-2xl p-2">
                 <div className="pointer-events-none"><Diagram id={c} /></div>
@@ -64,7 +66,8 @@ export const LearnScreen: React.FC = () => {
         if (!list.length) return null;
         return (
           <div key={gname} className={`${card} p-3 space-y-1.5`}>
-            <SectionTitle>{gname} views</SectionTitle>
+            <SectionTitle>{GROUP_TITLE[gname] || `${gname} views`}</SectionTitle>
+            <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-1.5">
             {list.map((v) => (
               <button key={v.id} type="button" onClick={() => setView(v)} className="w-full flex items-center gap-3 text-left bg-[var(--c-surface2)] rounded-2xl p-2">
                 <div className="w-20 shrink-0 pointer-events-none">{v.media?.length ? <img src={`./views/${v.media[0].src}.jpg`} alt="" className="w-full aspect-square object-cover rounded-xl bg-black" /> : <Diagram id={v.diagram} />}</div>
@@ -75,6 +78,7 @@ export const LearnScreen: React.FC = () => {
                 <ChevronRight className="w-4 h-4 text-[var(--c-muted)] shrink-0" />
               </button>
             ))}
+            </div>
           </div>
         );
       })}
@@ -110,7 +114,9 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
   <div className="space-y-3">
     <BackBar onBack={onBack} title="All views" />
     <h2 className="text-lg font-bold text-[var(--c-text)]">{v.name}</h2>
-    <ViewMedia v={v} />
+    <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] md:gap-4 md:items-start">
+    <div className="md:sticky md:top-4"><ViewMedia v={v} /></div>
+    <div className="space-y-3">
     <div className={`${card} p-4 space-y-2`}>
       <p className="text-[13px] text-[var(--c-text2)]"><b className="text-[var(--c-text)]">Probe: </b>{v.probe}</p>
       <p className="text-[13px] text-[var(--c-text2)]"><b className="text-[var(--c-text)]">Marker: </b>{v.marker}</p>
@@ -128,8 +134,24 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
         ))}
       </div>
     ) : null}
+    {v.signs?.length ? (
+      <div className={`${card} p-4 space-y-2`}>
+        <SectionTitle>Key signs</SectionTitle>
+        <div className="grid gap-2 md:grid-cols-2">
+          {v.signs.map(([sign, meaning]) => (
+            <div key={sign} className="bg-[var(--c-surface2)] rounded-2xl p-3">
+              <p className="text-[13px] font-bold text-[var(--c-text)]">{sign}</p>
+              <p className="text-[12.5px] leading-snug text-[var(--c-text2)]">{meaning}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    ) : null}
     <Block title="Measure here" items={v.measure} color="#F2B33D" />
     <Block title="Pitfalls" items={v.pitfalls} color="#E05A4F" />
+    {VIEW_CAVEATS[v.id] && <div className={`${card} p-4`}><CaveatList ids={VIEW_CAVEATS[v.id]} /></div>}
+    </div>
+    </div>
   </div>
 );
 

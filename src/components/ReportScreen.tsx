@@ -49,6 +49,7 @@ export const ReportScreen: React.FC = () => {
   const ds = diastology(v, d);
 
   return (
+    <div className="space-y-3 lg:space-y-0 lg:grid lg:grid-cols-[minmax(0,1fr)_380px] lg:gap-4 lg:items-start">
     <div className="space-y-3">
       <div className={`${card} p-3 space-y-2`}>
         <div className="flex gap-2">
@@ -93,7 +94,7 @@ export const ReportScreen: React.FC = () => {
             </button>
             {isOpen && (
               <div className="px-4 pb-4 space-y-2.5">
-                <div className="grid grid-cols-2 gap-x-2 gap-y-2.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-2 gap-y-2.5">
                   {shown.map((f) => <div key={f.key} className={wide(f) ? "col-span-2" : ""}><FieldRow f={f} value={v[f.key] || ""} grade={gradeField(f.key, v, d)} onTips={() => setTips(f)} /></div>)}
                 </div>
                 {adv.length > 0 && (
@@ -139,6 +140,8 @@ export const ReportScreen: React.FC = () => {
         <FileText className="w-5 h-5" /> Generate report
       </button>
       <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Grading follows BSE/ASE/EACVI/ESC thresholds. Always apply clinical judgement and check against the current guidelines.</p>
+    </div>
+    <LivePreview v={v} onOpen={() => setShowReport(true)} />
 
       {tips && (
         <Sheet title={tips.label} onClose={() => setTips(null)}>
@@ -161,6 +164,25 @@ export const ReportScreen: React.FC = () => {
         </Sheet>
       )}
     </div>
+  );
+};
+
+/** Tablet (landscape): the report builds live beside the form. */
+const LivePreview: React.FC<{ v: Record<string, string>; onOpen: () => void }> = ({ v, onOpen }) => {
+  const rep = useMemo(() => buildReport(v), [v]);
+  return (
+    <aside className={`${card} hidden lg:flex flex-col sticky top-4 max-h-[calc(100vh-2rem)] p-3 gap-2`}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-[14px] font-bold text-[var(--c-teal)]">Live report</h2>
+        <button type="button" onClick={onOpen} className="m3-press px-3 py-1.5 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] text-xs font-bold flex items-center gap-1"><FileText className="w-4 h-4" /> Open</button>
+      </div>
+      {rep.findings.length > 0 && (
+        <ul className="space-y-1">
+          {rep.findings.map((f) => <li key={f} className="text-[12px] leading-snug text-[var(--c-text)] pl-3 relative before:content-['•'] before:absolute before:left-0 before:text-[var(--c-teal)]">{f}</li>)}
+        </ul>
+      )}
+      <pre className="flex-1 overflow-y-auto whitespace-pre-wrap bg-[var(--c-surface2)] rounded-2xl p-3 text-[11.5px] leading-relaxed text-[var(--c-text2)] font-mono">{rep.text}</pre>
+    </aside>
   );
 };
 

@@ -1,3 +1,4 @@
+import { EXTRA_CAVEATS, EXTRA_VIEWS, EXTRA_REFS, EXTRA_FORMULAE } from "./advanced";
 /**
  * Teaching content for Echo Hub: measurement caveats, view-by-view guides and reference tables.
  * Written for this app from general echocardiography knowledge and the cited society guidelines.
@@ -265,7 +266,7 @@ export interface Media {
 export interface ViewGuide {
   id: string;
   name: string;
-  group: "Parasternal" | "Apical" | "Subcostal" | "Suprasternal";
+  group: "Parasternal" | "Apical" | "Subcostal" | "Suprasternal" | "VExUS" | "Other";
   probe: string;
   marker: string;
   structures: string[];
@@ -276,6 +277,8 @@ export interface ViewGuide {
   fixes?: [string, string][]; // [what you see, how to correct it]
   /** Real images in public/views: loops (.mp4 + .jpg poster) and measured stills (.jpg). Anonymised. */
   media?: Media[];
+  /** Named signs and what they mean (lung ultrasound etc.) */
+  signs?: [string, string][];
 }
 
 export const VIEWS: ViewGuide[] = [
@@ -544,3 +547,9 @@ export const FORMULAE: { name: string; formula: string; note?: string }[] = [
   { name: "LA volume (area-length)", formula: "LAV = 0.85 × A4C area × A2C area / shortest length" },
   { name: "Qp:Qs", formula: "(RVOT area × RVOT VTI) / (LVOT area × LVOT VTI)" },
 ];
+
+// ---------- Advanced and non-cardiac content ----------
+Object.assign(CAVEATS, EXTRA_CAVEATS);
+VIEWS.push(...EXTRA_VIEWS);
+REFS.push(...EXTRA_REFS);
+FORMULAE.push(...EXTRA_FORMULAE);

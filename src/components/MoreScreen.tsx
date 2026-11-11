@@ -84,7 +84,7 @@ export const MoreScreen: React.FC = () => {
   const [msg, setMsg] = useState<string | null>(null);
   useEffect(() => { appVersion().then(setVersion); }, []);
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 md:columns-2 md:gap-3 md:space-y-0 md:[&>*]:mb-3 md:[&>*]:break-inside-avoid">
       <AppsCard />
       <div className={`${card} p-4 space-y-3`}>
         <SectionTitle>Appearance</SectionTitle>

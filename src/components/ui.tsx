@@ -20,8 +20,8 @@ export const GradeBadge: React.FC<{ g: Grade | null | undefined; small?: boolean
   ) : null;
 
 export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; children: React.ReactNode }> = ({ onClose, title, children }) => (
-  <div className="fixed inset-0 z-[60] bg-black/60 flex items-end justify-center" onClick={onClose}>
-    <div className="bg-[var(--c-surface)] w-full max-w-md rounded-t-[28px] max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
+  <div className="fixed inset-0 z-[60] bg-black/60 flex items-end md:items-center justify-center" onClick={onClose}>
+    <div className="bg-[var(--c-surface)] w-full max-w-md md:max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
       <div className="flex flex-col items-center px-4 pt-2.5 pb-2"><span className="w-8 h-1 rounded-full bg-[var(--c-border2)] opacity-60 mb-2" /><div className="w-full flex items-center justify-between">
         <div className="text-[22px] leading-7 text-[var(--c-text)] min-w-0">{title}</div>
         <button type="button" onClick={onClose} aria-label="Close" className="m3-press w-10 h-10 rounded-full text-[var(--c-text2)] text-lg">✕</button>

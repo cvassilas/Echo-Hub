@@ -9,8 +9,8 @@ export const RefScreen: React.FC = () => {
   const tables = REFS.filter((t) => !ql || [t.title, t.note || "", ...t.rows.flat(), ...t.head].join(" ").toLowerCase().includes(ql));
   const formulae = FORMULAE.filter((f) => !ql || [f.name, f.formula, f.note || ""].join(" ").toLowerCase().includes(ql));
   return (
-    <div className="space-y-3">
-      <div className="relative">
+    <div className="space-y-3 md:columns-2 md:gap-3 md:space-y-0 md:[&>*]:mb-3 md:[&>*]:break-inside-avoid">
+      <div className="relative md:[column-span:all]">
         <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--c-muted)]" />
         <input aria-label="Search reference values" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search, e.g. LAVI, AS, TAPSE" className={`${inputCls} pl-9`} />
       </div>

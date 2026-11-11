@@ -54,7 +54,7 @@ export const FIELD_VIEW: Record<string, ViewId> = {
   rv_basal: "rvf", rv_mid: "rvf", rv_lv: "rvf", tapse: "rvf", rv_s: "rvf", rv_eda: "rvf", rv_esa: "rvf", rv_fws: "rvf", ra_area: "rvf",
   lvot_vti: "a5c", av_vmax: "a5c", av_meanpg: "a5c", av_vti: "a5c", ar: "a5c", ar_pht: "a5c",
   eff: "sc", eff_depth: "sc", tamponade: "sc", rv_wall: "sc",
-  ivc_d: "ivcv", ivc_collapse: "ivcv",
+  ivc_d: "ivcv", ivc_collapse: "ivcv", hv_pattern: "ivcv", pv_pf: "ivcv", irv_pattern: "ivcv",
   desc_ao: "ssn",
 };
 
@@ -71,6 +71,29 @@ export interface FieldDef {
 }
 
 const SEV = ["None", "Trace", "Mild", "Moderate", "Severe"];
+
+// ---------- VExUS (Beaubien-Souligny et al., Ultrasound J 2020) ----------
+export const HV_OPTS = ["Normal (S > D)", "Mild (S < D)", "Severe (S reversal)"];
+export const IRV_OPTS = ["Normal (continuous)", "Mild (biphasic, S and D)", "Severe (monophasic, D only)"];
+export type VexusLevel = "normal" | "mild" | "severe";
+export const hvLevel = (s?: string): VexusLevel | undefined => !s ? undefined : s.startsWith("Severe") ? "severe" : s.startsWith("Mild") ? "mild" : "normal";
+export const irvLevel = hvLevel;
+export const pvLevel = (pf?: number): VexusLevel | undefined => pf === undefined ? undefined : pf >= 50 ? "severe" : pf >= 30 ? "mild" : "normal";
+export interface VexusResult { grade?: 0 | 1 | 2 | 3; text: string; detail: string }
+/** IVC in cm. Grade 0 if IVC < 2 cm; otherwise 1 = normal/mild only, 2 = one severe, 3 = two or more severe. */
+export function vexus(ivcCm: number | undefined, hv?: VexusLevel, pv?: VexusLevel, irv?: VexusLevel): VexusResult {
+  const parts = [["hepatic vein", hv], ["portal vein", pv], ["intrarenal vein", irv]] as const;
+  const have = parts.filter(([, l]) => l);
+  const detail = have.map(([n, l]) => `${n} ${l}`).join(", ");
+  if (ivcCm === undefined) return { text: "Enter the IVC diameter first", detail };
+  if (ivcCm < 2) return { grade: 0, text: "VExUS grade 0: no congestion (IVC < 2 cm)", detail };
+  if (!have.length) return { text: "IVC ≥ 2 cm: add the hepatic, portal and intrarenal Doppler", detail };
+  const severe = have.filter(([, l]) => l === "severe").length;
+  const grade = severe >= 2 ? 3 : severe === 1 ? 2 : 1;
+  const words = ["", "mild congestion", "moderate congestion", "severe congestion"][grade];
+  const missing = parts.length - have.length;
+  return { grade, text: `VExUS grade ${grade}: ${words}${missing && grade < 3 ? ` (${missing} Doppler site${missing > 1 ? "s" : ""} not assessed)` : ""}`, detail };
+}
 
 export const FIELDS: FieldDef[] = [
   // Context (no patient identifiers)
@@ -161,6 +184,9 @@ export const FIELDS: FieldDef[] = [
   // IVC
   { key: "ivc_d", label: "IVC maximum diameter", section: "ivc", kind: "num", unit: "cm", caveats: ["ivc_vent"] },
   { key: "ivc_collapse", label: "IVC collapse with sniff / inspiration", section: "ivc", kind: "select", options: ["", "> 50%", "< 50%"], caveats: ["ivc_vent"] },
+  { key: "hv_pattern", label: "VExUS: hepatic vein Doppler", section: "ivc", kind: "select", options: ["", ...HV_OPTS], caveats: ["vexus"], advanced: true },
+  { key: "pv_pf", label: "VExUS: portal vein pulsatility fraction", section: "ivc", kind: "num", unit: "%", caveats: ["vexus"], advanced: true },
+  { key: "irv_pattern", label: "VExUS: intrarenal venous Doppler", section: "ivc", kind: "select", options: ["", ...IRV_OPTS], caveats: ["vexus"], advanced: true },
 
   // Pericardium
   { key: "eff", label: "Pericardial effusion", section: "peri", kind: "select", options: ["", "None", "Present"], caveats: ["effusion"] },
@@ -652,6 +678,12 @@ export function buildReport(v: Values): Report {
     const vent = v.ventilated === "Mechanically ventilated";
     out.push("IVC", `IVC ${meas(v, "ivc_d") || "–"}${v.ivc_collapse ? `, ${v.ivc_collapse} collapse` : ""}. ${vent ? "Mechanically ventilated: RAP not estimated from IVC." : d.rap !== undefined ? `Estimated RAP ${d.rap} mmHg${d.rap === 3 ? " (0–5)" : d.rap === 8 ? " (5–10)" : " (10–20)"}.` : ""}`.trim(), "");
     if (d.rap === 15) findings.push("Dilated, non-collapsing IVC (estimated RAP 15 mmHg)");
+  }
+  if (v.hv_pattern || num(v, "pv_pf") !== undefined || v.irv_pattern) {
+    const vx = vexus(num(v, "ivc_d"), hvLevel(v.hv_pattern), pvLevel(num(v, "pv_pf")), irvLevel(v.irv_pattern));
+    const bits = [v.hv_pattern && `hepatic vein ${lc(v.hv_pattern)}`, num(v, "pv_pf") !== undefined && `portal vein pulsatility ${fmt(num(v, "pv_pf"), 0)}%`, v.irv_pattern && `intrarenal vein ${lc(v.irv_pattern)}`].filter(Boolean);
+    out.push("VENOUS CONGESTION", `${vx.text}.${bits.length ? ` ${bits.join(", ").replace(/^./, (c) => c.toUpperCase())}.` : ""}`, "");
+    if (vx.grade && vx.grade >= 2) findings.push(`VExUS grade ${vx.grade} venous congestion`);
   }
 
   // PH

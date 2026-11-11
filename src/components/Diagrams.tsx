@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useId } from "react";
+import { Vexus, Lung, Tcd, Onsd } from "./Diagrams2";
 
 /**
  * Original teaching diagrams drawn to look like echo images (not to scale, not real patient images).
@@ -501,6 +502,10 @@ export const DIAGRAMS: Record<string, { title: string; el: React.FC }> = {
   windows: { title: "Acoustic windows", el: Windows },
   doppler: { title: "Doppler angle", el: DopplerAngle },
   pisa: { title: "PISA", el: Pisa },
+  vexus: { title: "VExUS Doppler patterns", el: Vexus },
+  lung: { title: "Lung ultrasound signs", el: Lung },
+  tcd: { title: "Transcranial Doppler waveforms", el: Tcd },
+  onsd: { title: "Optic nerve sheath", el: Onsd },
   inflow: { title: "Diastolic filling patterns", el: Inflow },
 };
 
