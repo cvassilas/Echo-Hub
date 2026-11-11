@@ -1,5 +1,6 @@
 import React from "react";
 import { Info } from "lucide-react";
+import { useBackHandler } from "../lib/nav";
 import { Grade, Level } from "../lib/echo";
 import { CAVEATS } from "../lib/content";
 import { REFERENCES, CAVEAT_REFS } from "../lib/references";
@@ -20,7 +21,9 @@ export const GradeBadge: React.FC<{ g: Grade | null | undefined; small?: boolean
     </span>
   ) : null;
 
-export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; children: React.ReactNode }> = ({ onClose, title, children }) => (
+export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; children: React.ReactNode }> = ({ onClose, title, children }) => {
+  useBackHandler(true, onClose);
+  return (
   <div className="fixed inset-0 z-[60] bg-black/60 flex items-end md:items-center justify-center" onClick={onClose}>
     <div className="bg-[var(--c-surface)] w-full max-w-md md:max-w-2xl rounded-t-[28px] md:rounded-[28px] max-h-[92vh] flex flex-col shadow-2xl animate-fadeIn" onClick={(e) => e.stopPropagation()}>
       <div className="flex flex-col items-center px-4 pt-2.5 pb-2"><span className="w-8 h-1 rounded-full bg-[var(--c-border2)] opacity-60 mb-2" /><div className="w-full flex items-center justify-between">
@@ -30,7 +33,8 @@ export const Sheet: React.FC<{ onClose: () => void; title: React.ReactNode; chil
       <div className="overflow-y-auto p-4 pb-8 space-y-4">{children}</div>
     </div>
   </div>
-);
+  );
+};
 
 /** Numbered source list; each item opens the paper or guideline. */
 export const RefList: React.FC<{ keys: string[]; title?: string }> = ({ keys, title = "Sources" }) => {

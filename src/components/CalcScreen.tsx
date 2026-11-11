@@ -198,7 +198,7 @@ export const CalcScreen: React.FC = () => {
     const outs = isOpen ? c.run(n, s) : [];
     return (
       <div key={c.id} className={`${card} break-inside-avoid mb-2.5`}>
-        <button type="button" onClick={() => setOpen(open === c.id ? null : c.id)} className="w-full flex items-center justify-between px-4 py-3 text-left">
+        <button type="button" onClick={(e) => { const el = e.currentTarget; const opening = open !== c.id; setOpen(opening ? c.id : null); if (opening) requestAnimationFrame(() => requestAnimationFrame(() => el.scrollIntoView({ block: "start", behavior: "smooth" }))); }} className="w-full flex items-center justify-between px-4 py-3 text-left scroll-mt-4">
           <span className="flex items-center gap-2 text-sm font-bold text-[var(--c-text)]">{isOpen ? <ChevronDown className="w-4 h-4 shrink-0" /> : <ChevronRight className="w-4 h-4 shrink-0" />}{c.title}</span>
           {c.caveats && <InfoButton label={c.title} onClick={() => setTips(c)} />}
         </button>

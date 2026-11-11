@@ -1,4 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { App as CapApp } from "@capacitor/app";
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import { VisibleCtx, goBack, scrollToAfterPaint } from "./lib/nav";
 import { FileText, Calculator, GraduationCap, BookOpen, LayoutGrid } from "lucide-react";
 import { useData } from "./lib/store";
 import { checkForUpdate, installUpdate, UpdateInfo } from "./lib/updates";
@@ -15,7 +18,40 @@ const TAB_KEY = "echo_hub_tab";
 export default function App() {
   const { settings } = useData();
   const [tab, setTabState] = useState<Tab>(() => { try { return (localStorage.getItem(TAB_KEY) as Tab) || "report"; } catch { return "report"; } });
-  const setTab = (t: Tab) => { setTabState(t); try { localStorage.setItem(TAB_KEY, t); } catch { /* */ } window.scrollTo(0, 0); };
+  // Each tab keeps its own scroll position and state (tabs stay mounted, just hidden).
+  const scrollPos = useRef<Partial<Record<Tab, number>>>({});
+  const tabRef = useRef(tab);
+  tabRef.current = tab;
+  const setTab = (t: Tab) => {
+    if (t === tabRef.current) { window.scrollTo({ top: 0, behavior: "smooth" }); return; }
+    scrollPos.current[tabRef.current] = window.scrollY;
+    setTabState(t);
+    try { localStorage.setItem(TAB_KEY, t); } catch { /* */ }
+    scrollToAfterPaint(scrollPos.current[t] || 0);
+  };
+  // On Android, open web links in the browser / YouTube app rather than inside Echo Hub.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const Launcher = registerPlugin<{ openUrl(o: { url: string }): Promise<void> }>("AppLauncher");
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as HTMLElement | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!a || !/^https?:/i.test(a.href)) return;
+      e.preventDefault();
+      Launcher.openUrl({ url: a.href }).catch(() => { window.open(a.href, "_blank"); });
+    };
+    document.addEventListener("click", onClick, true);
+    return () => document.removeEventListener("click", onClick, true);
+  }, []);
+  // Android back: close the top sheet or sub-page first, then return to Report, then leave the app.
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const h = CapApp.addListener("backButton", () => {
+      if (goBack()) return;
+      if (tabRef.current !== "report") setTab("report");
+      else CapApp.minimizeApp().catch(() => {});
+    });
+    return () => { h.then((x) => x.remove()); };
+  }, []);
   const [update, setUpdate] = useState<UpdateInfo | null>(null);
 
   useEffect(() => { document.documentElement.classList.toggle("theme-light", settings.theme === "light"); }, [settings.theme]);
@@ -32,11 +68,11 @@ export default function App() {
           <p className="text-[13px] font-semibold text-[var(--c-teal)]">Echo Hub</p>
           <h1 className="text-[30px] leading-9 font-normal text-[var(--c-text)]">{TITLES[tab]}</h1>
         </header>
-        {tab === "report" && <ReportScreen />}
-        {tab === "calc" && <CalcScreen />}
-        {tab === "learn" && <LearnScreen />}
-        {tab === "ref" && <RefScreen />}
-        {tab === "more" && <MoreScreen />}
+        {([["report", ReportScreen], ["calc", CalcScreen], ["learn", LearnScreen], ["ref", RefScreen], ["more", MoreScreen]] as const).map(([t, Screen]) => (
+          <VisibleCtx.Provider key={t} value={tab === t}>
+            <div hidden={tab !== t}><Screen /></div>
+          </VisibleCtx.Provider>
+        ))}
       </main>
 
       {update && (

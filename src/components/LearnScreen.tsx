@@ -1,9 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
+import { useBackHandler, scrollToAfterPaint } from "../lib/nav";
 import { ChevronRight, ArrowLeft, Search } from "lucide-react";
 import { VIEWS, CAVEATS, ViewGuide } from "../lib/content";
 import { Diagram, DIAGRAMS } from "./Diagrams";
 import { card, inputCls, Bullets, SectionTitle, CaveatList, RefList } from "./ui";
 import { viewRefs } from "../lib/references";
+import { LECTURE_LINKS, topicVideos } from "../lib/links";
+import { PlayCircle, ExternalLink } from "lucide-react";
 
 const CONCEPTS = ["windows", "doppler", "inflow", "pisa"];
 const VIEW_CAVEATS: Record<string, string[]> = { vexus_hv: ["vexus"], vexus_pv: ["vexus"], vexus_irv: ["vexus"], lus: ["lus", "lus_score", "effusion_vol", "diaphragm"], tcd: ["tcd"], onsd: ["onsd"] };
@@ -14,17 +17,22 @@ export const LearnScreen: React.FC = () => {
   const [caveat, setCaveat] = useState<string | null>(null);
   const [concept, setConcept] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  // Open topics at the top; going back returns to the same place in the list.
+  const listY = useRef(0);
+  const open = (fn: () => void) => { listY.current = window.scrollY; fn(); scrollToAfterPaint(0); };
+  const back = () => { setView(null); setCaveat(null); setConcept(null); scrollToAfterPaint(listY.current); };
+  useBackHandler(!!(view || caveat || concept), back);
 
-  if (view) return <ViewPage v={view} onBack={() => setView(null)} />;
+  if (view) return <ViewPage v={view} onBack={back} />;
   if (caveat) return (
     <div className="space-y-3">
-      <BackBar onBack={() => setCaveat(null)} title="Measurement caveats" />
+      <BackBar onBack={back} title="Measurement caveats" />
       <div className={`${card} p-4`}><CaveatList ids={[caveat]} /></div>
     </div>
   );
   if (concept) return (
     <div className="space-y-3">
-      <BackBar onBack={() => setConcept(null)} title={DIAGRAMS[concept].title} />
+      <BackBar onBack={back} title={DIAGRAMS[concept].title} />
       <div className={`${card} p-3`}><Diagram id={concept} /></div>
       {concept === "inflow" && <RealExample src="m_mv_inflow" note="Real example: normal mitral inflow (E 61 cm/s, A 53 cm/s, E/A 1.1)." />}
       {concept === "pisa" && <RealExample src="m_mr_pisa" note="Real example: MR PISA in a zoomed apical view. Baseline shifted towards the jet (aliasing velocity 0.37 m/s), radius 0.9 cm, flow 168 ml/s, EROA 0.3 cm², regurgitant volume 54 ml: moderate primary MR, or severe if secondary (ESC)." />}
@@ -32,6 +40,7 @@ export const LearnScreen: React.FC = () => {
       {concept === "inflow" && <div className={`${card} p-4`}><CaveatList ids={["mitral_inflow", "eprime", "diast_invalid"]} /></div>}
       {concept === "pisa" && <div className={`${card} p-4`}><CaveatList ids={["pisa"]} /></div>}
       {concept === "doppler" && <div className={`${card} p-4`}><Bullets items={["Doppler measures only the component of velocity along the beam: measured = true × cos θ.", "Keep θ under 20° for velocities used in gradients (AS, TR, RVSP) and VTI.", "Angle correction is not recommended for cardiac Doppler; move the probe or change window instead.", "Colour Doppler first shows the jet direction; then line up the CW or PW cursor with it."]} /></div>}
+      <WatchRow id={concept} name={DIAGRAMS[concept].title} />
       {concept === "doppler" && <div className={`${card} p-4`}><RefList keys={["quinones2002"]} /></div>}
       {concept === "windows" && <div className={`${card} p-4`}><RefList keys={["bseMds2020", "mitchell2019"]} /></div>}
       {concept === "windows" && <div className={`${card} p-4`}><Bullets items={["Parasternal: left sternal edge, 3rd–4th space, patient rolled left, left arm above the head.", "Apical: at the apex beat, often lower and more lateral than expected; steep left lateral position.", "Subcostal: below the xiphisternum, knees bent. Often best in ventilated or COPD patients.", "Suprasternal: neck extended, probe in the notch, pointing down."]} /></div>}
@@ -55,7 +64,7 @@ export const LearnScreen: React.FC = () => {
           <SectionTitle>Concepts</SectionTitle>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2">
             {CONCEPTS.map((c) => (
-              <button key={c} type="button" onClick={() => setConcept(c)} className="text-left bg-[var(--c-surface2)] rounded-2xl p-2">
+              <button key={c} type="button" onClick={() => open(() => setConcept(c))} className="text-left bg-[var(--c-surface2)] rounded-2xl p-2">
                 <div className="pointer-events-none"><Diagram id={c} /></div>
                 <span className="block text-xs font-bold text-[var(--c-text)] mt-1.5">{DIAGRAMS[c].title}</span>
               </button>
@@ -72,7 +81,7 @@ export const LearnScreen: React.FC = () => {
             <SectionTitle>{GROUP_TITLE[gname] || `${gname} views`}</SectionTitle>
             <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-1.5">
             {list.map((v) => (
-              <button key={v.id} type="button" onClick={() => setView(v)} className="w-full flex items-center gap-3 text-left bg-[var(--c-surface2)] rounded-2xl p-2">
+              <button key={v.id} type="button" onClick={() => open(() => setView(v))} className="w-full flex items-center gap-3 text-left bg-[var(--c-surface2)] rounded-2xl p-2">
                 <div className="w-20 shrink-0 pointer-events-none">{v.media?.length ? <img src={`./views/${v.media[0].src}.jpg`} alt="" className="w-full aspect-square object-cover rounded-xl bg-black" /> : <Diagram id={v.diagram} />}</div>
                 <span className="flex-1 min-w-0">
                   <span className="block text-sm font-bold text-[var(--c-text)]">{v.name}</span>
@@ -90,13 +99,14 @@ export const LearnScreen: React.FC = () => {
         <div className={`${card} p-3 space-y-1.5`}>
           <SectionTitle>Measurement caveats</SectionTitle>
           {cav.map(([id, c]) => (
-            <button key={id} type="button" onClick={() => setCaveat(id)} className="w-full flex items-center justify-between text-left bg-[var(--c-surface2)] rounded-2xl px-3 py-2.5">
+            <button key={id} type="button" onClick={() => open(() => setCaveat(id))} className="w-full flex items-center justify-between text-left bg-[var(--c-surface2)] rounded-2xl px-3 py-2.5">
               <span className="text-[13px] font-semibold text-[var(--c-text)]">{c.title}</span>
               <ChevronRight className="w-4 h-4 text-[var(--c-muted)] shrink-0" />
             </button>
           ))}
         </div>
       )}
+      {!ql && <LinksCard />}
       <p className="text-[10.5px] text-[var(--c-muted)] text-center px-4">Loops are from real anonymised normal studies; diagrams are schematic and not to scale. Teaching notes are written for this app; check against current BSE/ASE guidance.</p>
     </div>
   );
@@ -153,6 +163,7 @@ const ViewPage: React.FC<{ v: ViewGuide; onBack: () => void }> = ({ v, onBack })
     <Block title="Measure here" items={v.measure} color="#F2B33D" />
     <Block title="Pitfalls" items={v.pitfalls} color="#E05A4F" />
     {VIEW_CAVEATS[v.id] && <div className={`${card} p-4`}><CaveatList ids={VIEW_CAVEATS[v.id]} /></div>}
+    <WatchRow id={v.id} name={v.name} />
     <div className={`${card} p-4`}><RefList keys={viewRefs(v.id, v.group)} title="Further reading" /></div>
     </div>
     </div>
@@ -200,5 +211,41 @@ const Block: React.FC<{ title: string; items: string[]; color: string }> = ({ ti
   <div className={`${card} p-4 space-y-2`}>
     <SectionTitle>{title}</SectionTitle>
     <Bullets items={items} color={color} />
+  </div>
+);
+
+/** Video searches for this topic (YouTube). */
+const WatchRow: React.FC<{ id: string; name: string }> = ({ id, name }) => (
+  <div className={`${card} p-4 space-y-2`}>
+    <SectionTitle>Watch lectures</SectionTitle>
+    <div className="flex flex-wrap gap-2">
+      {topicVideos(id, name).map((l) => (
+        <a key={l.name} href={l.url} target="_blank" rel="noopener noreferrer" className="m3-press inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] text-[12.5px] font-bold">
+          <PlayCircle className="w-4 h-4" /> {l.name}
+        </a>
+      ))}
+    </div>
+  </div>
+);
+
+/** Lecture series and teaching sites. */
+const LinksCard: React.FC = () => (
+  <div className={`${card} p-3 space-y-3`}>
+    {LECTURE_LINKS.map((g) => (
+      <div key={g.group} className="space-y-1.5">
+        <SectionTitle>{g.group}</SectionTitle>
+        <div className="space-y-1.5 md:space-y-0 md:grid md:grid-cols-2 md:gap-1.5">
+          {g.items.map((l) => (
+            <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2.5 bg-[var(--c-surface2)] rounded-2xl p-3">
+              <ExternalLink className="w-4 h-4 text-[var(--c-teal)] shrink-0 mt-0.5" />
+              <span className="min-w-0">
+                <span className="block text-[13px] font-bold text-[var(--c-text)]">{l.name}</span>
+                <span className="block text-[11.5px] leading-snug text-[var(--c-muted)]">{l.note}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    ))}
   </div>
 );

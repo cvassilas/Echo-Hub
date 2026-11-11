@@ -57,5 +57,5 @@ const b64url = (s: string) => btoa(unescape(encodeURIComponent(s))).replace(/\+/
 export async function sendToClinicalLogs(entry: object) {
   const url = `clinicallogs://echo?d=${b64url(JSON.stringify(entry))}`;
   if (!Capacitor.isNativePlatform()) throw new Error("This works in the Android app, with Clinical Logs installed.");
-  await Launcher.openUrl({ url });
+  await Launcher.openUrl({ url }).catch(() => { throw new Error("Clinical Logs isn't installed on this phone."); });
 }
