@@ -18,7 +18,7 @@ export type Level = "normal" | "borderline" | "mild" | "moderate" | "severe" | "
 export interface Grade { level: Level; text: string }
 export type Values = Record<string, string>;
 
-export type SectionId = "context" | "lv" | "rv" | "atria" | "aorta" | "av" | "mv" | "tv" | "pv" | "ivc" | "peri";
+export type SectionId = "context" | "lv" | "rv" | "atria" | "aorta" | "av" | "mv" | "tv" | "pv" | "ivc" | "vexus" | "peri" | "pleura";
 export const SECTIONS: { id: SectionId; title: string }[] = [
   { id: "context", title: "Patient and study" },
   { id: "lv", title: "Left ventricle" },
@@ -30,10 +30,12 @@ export const SECTIONS: { id: SectionId; title: string }[] = [
   { id: "tv", title: "Tricuspid valve and PA pressure" },
   { id: "pv", title: "Pulmonary valve" },
   { id: "ivc", title: "IVC" },
+  { id: "vexus", title: "VExUS (IVC ≥ 2 cm)" },
   { id: "peri", title: "Pericardium" },
+  { id: "pleura", title: "Pleura and lungs" },
 ];
 
-export type ViewId = "context" | "plax" | "psax" | "a4c" | "rvf" | "a5c" | "sc" | "ivcv" | "ssn";
+export type ViewId = "context" | "plax" | "psax" | "a4c" | "rvf" | "a5c" | "sc" | "ivcv" | "vexus" | "ssn" | "lung";
 export const VIEW_SECTIONS: { id: ViewId; title: string }[] = [
   { id: "context", title: "Patient and study" },
   { id: "plax", title: "PLAX" },
@@ -43,7 +45,9 @@ export const VIEW_SECTIONS: { id: ViewId; title: string }[] = [
   { id: "a5c", title: "A5C" },
   { id: "sc", title: "Subcostal" },
   { id: "ivcv", title: "IVC" },
+  { id: "vexus", title: "VExUS (IVC ≥ 2 cm)" },
   { id: "ssn", title: "Suprasternal" },
+  { id: "lung", title: "Pleura and lungs" },
 ];
 export const FIELD_VIEW: Record<string, ViewId> = {
   indication: "context", sex: "context", age: "context", height: "context", weight: "context", hr: "context", rhythm: "context", quality: "context", ventilated: "context",
@@ -54,7 +58,8 @@ export const FIELD_VIEW: Record<string, ViewId> = {
   rv_basal: "rvf", rv_mid: "rvf", rv_lv: "rvf", tapse: "rvf", rv_s: "rvf", rv_eda: "rvf", rv_esa: "rvf", rv_fws: "rvf", ra_area: "rvf",
   lvot_vti: "a5c", av_vmax: "a5c", av_meanpg: "a5c", av_vti: "a5c", ar: "a5c", ar_pht: "a5c",
   eff: "sc", eff_depth: "sc", tamponade: "sc", rv_wall: "sc",
-  ivc_d: "ivcv", ivc_collapse: "ivcv", hv_pattern: "ivcv", pv_pf: "ivcv", irv_pattern: "ivcv",
+  ivc_d: "ivcv", ivc_collapse: "ivcv", hv_pattern: "vexus", pv_vmax: "vexus", pv_vmin: "vexus", pv_pf: "vexus", irv_pattern: "vexus",
+  pl_sep_r: "lung", pl_char_r: "lung", pl_sep_l: "lung", pl_char_l: "lung", lung_sliding: "lung", lung_point: "lung", b_lines: "lung", consolidation: "lung", air_bronch: "lung", lus_score: "lung",
   desc_ao: "ssn",
 };
 
@@ -73,12 +78,21 @@ export interface FieldDef {
 const SEV = ["None", "Trace", "Mild", "Moderate", "Severe"];
 
 // ---------- VExUS (Beaubien-Souligny et al., Ultrasound J 2020) ----------
+export const PL_CHAR = ["Anechoic", "Complex, non-septated", "Complex, septated", "Homogeneously echogenic"];
 export const HV_OPTS = ["Normal (S > D)", "Mild (S < D)", "Severe (S reversal)"];
 export const IRV_OPTS = ["Normal (continuous)", "Mild (biphasic, S and D)", "Severe (monophasic, D only)"];
 export type VexusLevel = "normal" | "mild" | "severe";
 export const hvLevel = (s?: string): VexusLevel | undefined => !s ? undefined : s.startsWith("Severe") ? "severe" : s.startsWith("Mild") ? "mild" : "normal";
 export const irvLevel = hvLevel;
 export const pvLevel = (pf?: number): VexusLevel | undefined => pf === undefined ? undefined : pf >= 50 ? "severe" : pf >= 30 ? "mild" : "normal";
+/** Portal pulsatility fraction: entered directly, or from Vmax/Vmin. */
+export const portalPF = (v: Values): number | undefined => {
+  const pf = num(v, "pv_pf"); if (pf !== undefined) return pf;
+  const mx = num(v, "pv_vmax"), mn = num(v, "pv_vmin");
+  return mx && mn !== undefined ? ((mx - mn) / mx) * 100 : undefined;
+};
+/** VExUS is only graded / reported when the IVC is ≥ 2 cm. */
+export const vexusApplies = (v: Values) => (num(v, "ivc_d") ?? 0) >= 2;
 export interface VexusResult { grade?: 0 | 1 | 2 | 3; text: string; detail: string }
 /** IVC in cm. Grade 0 if IVC < 2 cm; otherwise 1 = normal/mild only, 2 = one severe, 3 = two or more severe. */
 export function vexus(ivcCm: number | undefined, hv?: VexusLevel, pv?: VexusLevel, irv?: VexusLevel): VexusResult {
@@ -184,14 +198,30 @@ export const FIELDS: FieldDef[] = [
   // IVC
   { key: "ivc_d", label: "IVC maximum diameter", section: "ivc", kind: "num", unit: "cm", caveats: ["ivc_vent"] },
   { key: "ivc_collapse", label: "IVC collapse with sniff / inspiration", section: "ivc", kind: "select", options: ["", "> 50%", "< 50%"], caveats: ["ivc_vent"] },
-  { key: "hv_pattern", label: "VExUS: hepatic vein Doppler", section: "ivc", kind: "select", options: ["", ...HV_OPTS], caveats: ["vexus"], advanced: true },
-  { key: "pv_pf", label: "VExUS: portal vein pulsatility fraction", section: "ivc", kind: "num", unit: "%", caveats: ["vexus"], advanced: true },
-  { key: "irv_pattern", label: "VExUS: intrarenal venous Doppler", section: "ivc", kind: "select", options: ["", ...IRV_OPTS], caveats: ["vexus"], advanced: true },
+
+  // VExUS (only shown and reported when the IVC is ≥ 2 cm)
+  { key: "hv_pattern", label: "Hepatic vein Doppler", section: "vexus", kind: "select", options: ["", ...HV_OPTS], caveats: ["vexus"] },
+  { key: "pv_vmax", label: "Portal vein Vmax", section: "vexus", kind: "num", unit: "cm/s", caveats: ["vexus"] },
+  { key: "pv_vmin", label: "Portal vein Vmin", section: "vexus", kind: "num", unit: "cm/s", caveats: ["vexus"] },
+  { key: "pv_pf", label: "or portal pulsatility fraction", section: "vexus", kind: "num", unit: "%", caveats: ["vexus"] },
+  { key: "irv_pattern", label: "Intrarenal venous Doppler", section: "vexus", kind: "select", options: ["", ...IRV_OPTS], caveats: ["vexus"] },
 
   // Pericardium
   { key: "eff", label: "Pericardial effusion", section: "peri", kind: "select", options: ["", "None", "Present"], caveats: ["effusion"] },
   { key: "eff_depth", label: "Largest diastolic depth", section: "peri", kind: "num", unit: "mm", caveats: ["effusion"] },
   { key: "tamponade", label: "Tamponade features", section: "peri", kind: "select", options: ["", "None", "RA systolic collapse", "RV diastolic collapse", "Plethoric IVC + chamber collapse", "Exaggerated respiratory variation"], caveats: ["effusion"] },
+
+  // Pleura and lungs
+  { key: "pl_sep_r", label: "Right effusion: max separation", section: "pleura", kind: "num", unit: "mm", caveats: ["effusion_vol"] },
+  { key: "pl_char_r", label: "Right effusion: appearance", section: "pleura", kind: "select", options: ["", ...PL_CHAR], caveats: ["lus"] },
+  { key: "pl_sep_l", label: "Left effusion: max separation", section: "pleura", kind: "num", unit: "mm", caveats: ["effusion_vol"] },
+  { key: "pl_char_l", label: "Left effusion: appearance", section: "pleura", kind: "select", options: ["", ...PL_CHAR], caveats: ["lus"] },
+  { key: "lung_sliding", label: "Lung sliding", section: "pleura", kind: "select", options: ["", "Present bilaterally", "Absent right", "Absent left", "Absent bilaterally"], caveats: ["lus"] },
+  { key: "lung_point", label: "Lung point", section: "pleura", kind: "select", options: ["", "Not seen", "Seen right", "Seen left"], caveats: ["lus"] },
+  { key: "b_lines", label: "B-lines", section: "pleura", kind: "select", options: ["", "None (A-profile)", "Focal", "Diffuse bilateral, smooth pleura", "Diffuse bilateral, irregular pleura / spared areas", "Unilateral"], caveats: ["lus"] },
+  { key: "consolidation", label: "Consolidation", section: "pleura", kind: "select", options: ["", "None", "Right base", "Left base", "Both bases", "Right upper / middle", "Left upper", "Multifocal"], caveats: ["lus"] },
+  { key: "air_bronch", label: "Air bronchograms", section: "pleura", kind: "select", options: ["", "None", "Dynamic", "Static"], caveats: ["lus"] },
+  { key: "lus_score", label: "LUS score (0–36)", section: "pleura", kind: "num", caveats: ["lus_score"], advanced: true },
 ];
 
 const FIELD_CAVEAT_FILL: Record<string, string[]> = {
@@ -383,6 +413,13 @@ function laviGrade(n: number, std: Standard = "BSE"): Grade {
   if (std === "BSE") return n < 34 ? g("normal", "Normal (< 34 ml/m²)") : n <= 38 ? g("borderline", "Borderline (34–38)") : g("mild", "Dilated (> 38)");
   return n <= 34 ? g("normal", "Normal (≤ 34 ml/m²)") : n <= 41 ? g("mild", "Mildly dilated (35–41)") : n <= 48 ? g("moderate", "Moderately dilated (42–48)") : g("severe", "Severely dilated (> 48)");
 }
+
+const plGrade = (n: number) => n === 0 ? g("normal", "No effusion") : g(n >= 50 ? "moderate" : "info", `≈ ${Math.round((20 * n) / 50) * 50} ml (Balik)`);
+Object.assign(GRADERS, {
+  pl_sep_r: plGrade, pl_sep_l: plGrade,
+  lus_score: (n: number) => n > 17 ? g("severe", "> 17: marked loss of aeration") : n >= 13 ? g("borderline", "13–17") : g("normal", "< 13"),
+  pv_pf: (n: number) => n >= 50 ? g("severe", "Severe (≥ 50%)") : n >= 30 ? g("mild", "Mild (30–49%)") : g("normal", "Normal (< 30%)"),
+});
 
 export const DERIVED_GRADERS: Partial<Record<keyof Derived, (n: number, v: Values) => Grade | null>> = {
   ef_calc: (n, v) => GRADERS.ef(n, v, {}),
@@ -685,10 +722,11 @@ export function buildReport(v: Values): Report {
     out.push("IVC", `IVC ${meas(v, "ivc_d") || "–"}${v.ivc_collapse ? `, ${v.ivc_collapse} collapse` : ""}. ${vent ? "Mechanically ventilated: RAP not estimated from IVC." : d.rap !== undefined ? `Estimated RAP ${d.rap} mmHg${d.rap === 3 ? " (0–5)" : d.rap === 8 ? " (5–10)" : " (10–20)"}.` : ""}`.trim(), "");
     if (d.rap === 15) findings.push("Dilated, non-collapsing IVC (estimated RAP 15 mmHg)");
   }
-  if (v.hv_pattern || num(v, "pv_pf") !== undefined || v.irv_pattern) {
-    const vx = vexus(num(v, "ivc_d"), hvLevel(v.hv_pattern), pvLevel(num(v, "pv_pf")), irvLevel(v.irv_pattern));
-    const bits = [v.hv_pattern && `hepatic vein ${lc(v.hv_pattern)}`, num(v, "pv_pf") !== undefined && `portal vein pulsatility ${fmt(num(v, "pv_pf"), 0)}%`, v.irv_pattern && `intrarenal vein ${lc(v.irv_pattern)}`].filter(Boolean);
-    out.push("VENOUS CONGESTION", `${vx.text}.${bits.length ? ` ${bits.join(", ").replace(/^./, (c) => c.toUpperCase())}.` : ""}`, "");
+  const pf = portalPF(v);
+  if (vexusApplies(v) && (v.hv_pattern || pf !== undefined || v.irv_pattern)) {
+    const vx = vexus(num(v, "ivc_d"), hvLevel(v.hv_pattern), pvLevel(pf), irvLevel(v.irv_pattern));
+    const bits = [v.hv_pattern && `Hepatic vein: ${lc(v.hv_pattern)}`, pf !== undefined && `Portal vein: pulsatility fraction ${fmt(pf, 0)}% (${pvLevel(pf)})`, v.irv_pattern && `Intrarenal vein: ${lc(v.irv_pattern)}`].filter(Boolean);
+    out.push("VENOUS CONGESTION", `${vx.text}.`, ...bits.map((b) => `${b}.`), "");
     if (vx.grade && vx.grade >= 2) findings.push(`VExUS grade ${vx.grade} venous congestion`);
   }
 
@@ -718,11 +756,52 @@ export function buildReport(v: Values): Report {
     if (v.eff === "Present") findings.push(`${sizeWord ? sizeWord.charAt(0).toUpperCase() + sizeWord.slice(1) + " p" : "P"}ericardial effusion${v.tamponade && v.tamponade !== "None" ? " with tamponade features" : ""}`);
   }
 
+  // Pleura and lungs
+  const pl = pleuraText(v);
+  if (pl.lines.length) { out.push("PLEURA AND LUNGS", ...pl.lines, ""); findings.push(...pl.findings); }
+
   out.push("SUMMARY");
   if (findings.length) findings.forEach((f, i) => out.push(`${i + 1}. ${f}.`));
   else out.push("No significant abnormality identified in the parameters recorded.");
   if (v.quality === "Poor" || v.quality === "Very limited") out.push(`Limited by ${v.quality.toLowerCase()} image quality.`);
   return { text: out.join("\n").replace(/\n{3,}/g, "\n\n").trim(), findings };
+}
+
+function pleuraText(v: Values): { lines: string[]; findings: string[] } {
+  const lines: string[] = [], findings: string[] = [];
+  const side = (k: "r" | "l", name: string) => {
+    const sep = num(v, `pl_sep_${k}`), ch = v[`pl_char_${k}`];
+    if (sep === undefined && !ch) return;
+    if (sep === 0) { lines.push(`No ${name} pleural effusion.`); return; }
+    const vol = sep ? Math.round((20 * sep) / 50) * 50 : undefined;
+    lines.push(`${name.charAt(0).toUpperCase() + name.slice(1)} pleural effusion${sep ? `, maximal separation ${fmt(sep, 0)} mm (≈ ${vol} ml, Balik)` : ""}${ch ? `, ${lc(ch)}` : ""}.`);
+    findings.push(`${name.charAt(0).toUpperCase() + name.slice(1)} pleural effusion${vol ? ` (≈ ${vol} ml)` : ""}${ch && ch !== "Anechoic" ? `, ${lc(ch)}` : ""}`);
+  };
+  side("r", "right"); side("l", "left");
+  const sl = v.lung_sliding, lp = v.lung_point;
+  if (sl) lines.push(sl === "Present bilaterally" ? "Lung sliding present bilaterally." : `Lung sliding ${lc(sl).replace(/ (right|left)$/, " on the $1")}.`);
+  if (lp === "Seen right" || lp === "Seen left") {
+    const sd = lp === "Seen right" ? "right" : "left";
+    lines.push(`Lung point seen on the ${sd}, diagnostic of pneumothorax.`);
+    findings.push(`${sd.charAt(0).toUpperCase() + sd.slice(1)} pneumothorax (lung point)`);
+  } else if (sl && sl !== "Present bilaterally") {
+    lines.push(`${lp === "Not seen" ? "No lung point seen. " : ""}Absent sliding is consistent with, but not specific for, pneumothorax.`);
+    findings.push(`Absent lung sliding ${sl === "Absent bilaterally" ? "bilaterally" : `on the ${sl.replace("Absent ", "")}`}: consider pneumothorax`);
+  }
+  const b = v.b_lines;
+  if (b) {
+    lines.push(b === "None (A-profile)" ? "A-line pattern, no significant B-lines." : `${b.replace(/,.*$/, "")} B-lines${b.includes(",") ? ` (${lc(b.split(", ").slice(1).join(", "))})` : ""}.`);
+    if (b.startsWith("Diffuse")) findings.push(b.includes("smooth") ? "Diffuse bilateral B-lines with smooth pleura: pattern of pulmonary oedema" : "Diffuse bilateral B-lines with irregular pleura and spared areas: pattern suggesting ARDS / inflammatory lung");
+    else if (b !== "None (A-profile)") findings.push(`${b} B-lines`);
+  }
+  const c = v.consolidation, ab = v.air_bronch;
+  if (c) {
+    lines.push(c === "None" ? "No consolidation." : `Consolidation: ${lc(c)}${ab && ab !== "None" ? `, with ${lc(ab)} air bronchograms` : ""}.`);
+    if (c !== "None") findings.push(`Consolidation (${lc(c)})${ab === "Dynamic" ? " with dynamic air bronchograms, favouring pneumonia" : ab === "Static" ? " with static air bronchograms (atelectasis or pneumonia)" : ""}`);
+  }
+  const lus = num(v, "lus_score");
+  if (lus !== undefined) lines.push(`LUS score ${fmt(lus, 0)}/36.`);
+  return { lines, findings };
 }
 
 function regurgText(valve: string, sev: string, extras: (string | 0 | undefined | false | "")[]): string {

@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, Fol
 import { toLogEntry, sendToClinicalLogs } from "../lib/clinicalLogs";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
-import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num } from "../lib/echo";
+import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num, vexusApplies, vexus, hvLevel, pvLevel, irvLevel, portalPF } from "../lib/echo";
 import { useData, updateSettings, setValue, setDraft, newDraft, saveDraftAsReport, openReport, deleteReport } from "../lib/store";
 import { card, inputCls, GradeBadge, Sheet, CaveatList, InfoButton, LEVEL_COLOR } from "./ui";
 import { saveFile } from "../lib/saveFile";
@@ -32,7 +32,7 @@ interface Sec { id: string; title: string; fields: FieldDef[]; derived: (keyof D
 
 export const ReportScreen: React.FC = () => {
   const { draft, reports, settings } = useData();
-  const v = useMemo(() => ({ ...draft.values, __std: settings.standard || "BSE" }), [draft.values, settings.standard]);
+  const v: Record<string, string> = useMemo(() => ({ ...draft.values, __std: settings.standard || "BSE" }), [draft.values, settings.standard]);
   const d = useMemo(() => derive(v), [v]);
   const byView = (settings.order || "view") === "view";
   const secs: Sec[] = byView
@@ -74,7 +74,7 @@ export const ReportScreen: React.FC = () => {
         <button type="button" onClick={() => updateSettings({ standard: settings.standard === "ASE" ? "BSE" : "ASE" })} className="m3-press px-3 py-2 rounded-full border border-[var(--c-border2)] text-[12px] font-bold text-[var(--c-teal)]" title="Reference standard">{settings.standard === "ASE" ? "ASE 2015" : "BSE 2020"}</button>
       </div>
 
-      {secs.map((s) => {
+      {secs.filter((s) => s.id !== "vexus" || vexusApplies(v)).map((s) => {
         const fields = s.fields;
         let basic = fields.filter((f) => !f.advanced), adv = fields.filter((f) => f.advanced);
         if (!basic.length) { basic = adv; adv = []; }
@@ -124,6 +124,19 @@ export const ReportScreen: React.FC = () => {
                     <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ph.reason}</p>
                   </div>
                 )}
+                {(s.id === "ivc" || s.id === "ivcv") && num(v, "ivc_d") !== undefined && (
+                  <p className="text-[11px] text-[var(--c-muted)] px-1">{vexusApplies(v) ? "IVC ≥ 2 cm: complete the VExUS section to grade venous congestion." : "IVC < 2 cm: VExUS grade 0, so the VExUS section isn't needed."}</p>
+                )}
+                {s.id === "vexus" && (v.hv_pattern || portalPF(v) !== undefined || v.irv_pattern) && (() => {
+                  const vx = vexus(num(v, "ivc_d"), hvLevel(v.hv_pattern), pvLevel(portalPF(v)), irvLevel(v.irv_pattern));
+                  const lvl = vx.grade === undefined ? "info" : (["normal", "mild", "moderate", "severe"] as const)[vx.grade];
+                  return (
+                    <div className="rounded-2xl p-3 text-xs" style={{ background: `color-mix(in srgb, ${LEVEL_COLOR[lvl]} 14%, transparent)` }}>
+                      <b className="text-[var(--c-text)]">{vx.text}</b>
+                      {portalPF(v) !== undefined && num(v, "pv_pf") === undefined && <p className="text-[11px] text-[var(--c-text2)] mt-0.5">Portal pulsatility {fmt(portalPF(v), 0)}% from Vmax/Vmin.</p>}
+                    </div>
+                  );
+                })()}
                 {s.diast && (num(v, "e") !== undefined || num(v, "e_sept") !== undefined || ds.graded) && (
                   <div className="rounded-2xl p-3 text-xs bg-[var(--c-surface2)]">
                     <b className="text-[var(--c-text)]">{ds.conclusion}</b>
