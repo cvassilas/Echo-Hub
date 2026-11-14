@@ -6,6 +6,25 @@
 import type { Caveat, ViewGuide, RefTable } from "./content";
 
 export const EXTRA_CAVEATS: Record<string, Caveat> = {
+  visual_size: {
+    title: "Visual (eyeball) estimates",
+    points: [
+      "Experienced operators' visual estimates of size and function agree reasonably with measurement, and are acceptable in focused scans (e.g. FUSIC); a formal report should measure where possible.",
+      "The report labels these as visual estimates. If a chamber is also measured, the measurement drives the summary and the visual estimate is listed alongside.",
+      "LV: compare with the expected size for the patient; a small, hyperdynamic LV with end-systolic cavity obliteration suggests underfilling or low afterload.",
+      "RV: in A4C the normal RV is smaller than two-thirds of the LV and the LV forms the apex; RV ≥ LV (or the RV forming the apex) suggests severe dilatation.",
+      "Atria: in A4C a normal LA is roughly the size of the RA and smaller than the LV; bowing of the interatrial septum shows which side has the higher pressure.",
+      "Foreshortened or off-axis views mislead the eye just as they distort measurements.",
+    ],
+  },
+  other_findings: {
+    title: "Other findings",
+    points: [
+      "Use this for anything the structured fields don't cover: intracardiac thrombus, masses, vegetations, devices and lines (pacing wires, ECMO cannulae, Impella), shunts or bubble study results, extracardiac findings.",
+      "Thrombus: give the site, size, shape (mural or protruding) and mobility; check with contrast or a second view if unsure, as apical artefact is common. Mobile or protruding thrombus carries a higher embolic risk.",
+      "Whatever you write here is added to the report under Other findings and to the summary.",
+    ],
+  },
   pvr: {
     title: "Pulmonary vascular resistance (Doppler estimate)",
     points: [
@@ -54,6 +73,9 @@ export const EXTRA_CAVEATS: Record<string, Caveat> = {
       "Judge thickening as well as inward motion; tethering and translation can make a passive segment look as if it moves.",
       "Patterns that follow a coronary territory suggest ischaemia; apical ballooning sparing the base suggests Takotsubo; a regional pattern can also follow LBBB, pacing or septal post-operative motion.",
       "Off-axis or foreshortened views create false regional abnormalities, especially at the apex.",
+      "Chart layout (bull's-eye, ASE/EACVI): outer ring basal 1–6, middle ring mid 7–12, inner ring apical 13–16, centre apex 17; anterior at the top, septum on the left, lateral on the right.",
+      "Wall motion score: normal 1, hypokinetic 2, akinetic 3, dyskinetic (or aneurysmal) 4. Wall motion score index = sum ÷ segments scored; 1.0 is normal and higher means more extensive dysfunction. Segments marked 'not seen' are left out.",
+      "Usual territories: LAD 1, 2, 7, 8, 13, 14, 17; RCA 3, 4, 9, 10, 15; LCx 5, 6, 11, 12, 16. Coronary anatomy varies, especially at the apex and inferolateral wall.",
     ],
   },
   rv_wall: {

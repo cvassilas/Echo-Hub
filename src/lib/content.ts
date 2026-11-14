@@ -99,6 +99,8 @@ export const CAVEATS: Record<string, Caveat> = {
       "Trace the blood–tissue interface, include papillary muscles and trabeculae in the cavity, and close the trace at the mitral annulus.",
       "End-diastole: the first frame after mitral valve closure or the largest cavity. End-systole: the frame before mitral opening or the smallest cavity.",
       "Contrast (e.g. SonoVue) improves accuracy when two or more contiguous segments aren't seen.",
+      "Enter the A4C and A2C volumes separately to get each monoplane EF. The app averages the two planes as an estimate of the biplane volumes; the machine's true biplane result (discs built from both planes together) can differ slightly, so enter it under 'Biplane EDV/ESV' if you have it.",
+      "A big gap between the A4C and A2C EF (more than about 10 points) usually means foreshortening or a regional abnormality in one plane; recheck before relying on the average.",
     ],
   },
   linear_lv: {

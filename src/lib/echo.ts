@@ -12,13 +12,14 @@
  *  - Baumgartner H et al. EAE/ASE valve stenosis 2009/2017; Zoghbi WA et al. ASE regurgitation 2017
  *  - Adler Y et al. ESC pericardial guidelines 2015 (effusion size)
  */
+import { summariseWm } from "./rwma";
 
 export type Sex = "M" | "F" | "";
 export type Level = "normal" | "borderline" | "mild" | "moderate" | "severe" | "info";
 export interface Grade { level: Level; text: string }
 export type Values = Record<string, string>;
 
-export type SectionId = "context" | "lv" | "rv" | "atria" | "aorta" | "av" | "mv" | "tv" | "pv" | "ivc" | "vexus" | "peri" | "pleura";
+export type SectionId = "context" | "lv" | "rv" | "atria" | "aorta" | "av" | "mv" | "tv" | "pv" | "ivc" | "vexus" | "peri" | "pleura" | "other";
 export const SECTIONS: { id: SectionId; title: string }[] = [
   { id: "context", title: "Patient and study" },
   { id: "lv", title: "Left ventricle" },
@@ -33,9 +34,10 @@ export const SECTIONS: { id: SectionId; title: string }[] = [
   { id: "vexus", title: "VExUS (IVC ≥ 2 cm)" },
   { id: "peri", title: "Pericardium" },
   { id: "pleura", title: "Pleura and lungs" },
+  { id: "other", title: "Other findings" },
 ];
 
-export type ViewId = "context" | "plax" | "psax" | "a4c" | "rvf" | "a5c" | "sc" | "ivcv" | "vexus" | "ssn" | "lung";
+export type ViewId = "context" | "plax" | "psax" | "a4c" | "rvf" | "a5c" | "sc" | "ivcv" | "vexus" | "ssn" | "lung" | "other";
 export const VIEW_SECTIONS: { id: ViewId; title: string }[] = [
   { id: "context", title: "Patient and study" },
   { id: "plax", title: "PLAX" },
@@ -48,12 +50,13 @@ export const VIEW_SECTIONS: { id: ViewId; title: string }[] = [
   { id: "vexus", title: "VExUS (IVC ≥ 2 cm)" },
   { id: "ssn", title: "Suprasternal" },
   { id: "lung", title: "Pleura and lungs" },
+  { id: "other", title: "Other findings" },
 ];
 export const FIELD_VIEW: Record<string, ViewId> = {
   indication: "context", sex: "context", age: "context", height: "context", weight: "context", hr: "context", rhythm: "context", quality: "context", ventilated: "context",
   lvidd: "plax", lvids: "plax", ivsd: "plax", lvpwd: "plax", lvot_d: "plax", ao_sinus: "plax", ao_asc: "plax", mv_morph: "plax", mr_vc: "plax", ar_vc: "plax",
   av_morph: "psax", septum: "psax", pv_at: "psax", pv_notch: "psax", pa_d: "psax", pr: "psax", mv_pht: "a4c",
-  lv_visual: "a4c", rwma: "a4c", ef: "a4c", edv: "a4c", esv: "a4c", mapse: "a4c", lv_gls: "a4c", e: "a4c", a: "a4c", dt: "a4c", ivrt: "a5c", e_sept: "a4c", e_lat: "a4c",
+  lv_visual: "a4c", lv_size_vis: "a4c", rv_size_vis: "rvf", rv_func_vis: "rvf", la_size_vis: "a4c", ra_size_vis: "rvf", rwma: "a4c", rwma_seg: "a4c", ef: "a4c", edv: "a4c", esv: "a4c", edv_4c: "a4c", esv_4c: "a4c", edv_2c: "a4c", esv_2c: "a4c", other_findings: "other", mapse: "a4c", lv_gls: "a4c", e: "a4c", a: "a4c", dt: "a4c", ivrt: "a5c", e_sept: "a4c", e_lat: "a4c",
   mv_meanpg: "a4c", mr: "a4c", mr_eroa: "a4c", la_vol: "a4c", lavi: "a4c", la_area: "a4c", la_rs: "a4c", pv_sd: "a4c", tr: "a4c", tr_vc: "a4c", trv: "a4c",
   rv_basal: "rvf", rv_mid: "rvf", rv_lv: "rvf", tapse: "rvf", rv_s: "rvf", rv_eda: "rvf", rv_esa: "rvf", rv_fws: "rvf", ra_area: "rvf",
   lvot_vti: "a5c", av_vmax: "a5c", av_meanpg: "a5c", av_vti: "a5c", ar: "a5c", ar_pht: "a5c",
@@ -67,7 +70,7 @@ export interface FieldDef {
   key: string;
   label: string;
   section: SectionId;
-  kind: "num" | "select" | "text";
+  kind: "num" | "select" | "text" | "longtext" | "segments";
   unit?: string;
   options?: string[];
   caveats?: string[]; // ids in content.ts CAVEATS
@@ -122,21 +125,29 @@ export const FIELDS: FieldDef[] = [
   { key: "ventilated", label: "Ventilation", section: "context", kind: "select", options: ["", "Spontaneous", "Mechanically ventilated"], caveats: ["ivc_vent"] },
 
   // LV
+  { key: "lv_size_vis", label: "LV size (visual)", section: "lv", kind: "select", options: ["", "Normal", "Small / underfilled", "Mildly dilated", "Moderately dilated", "Severely dilated"], caveats: ["visual_size"] },
   { key: "lv_visual", label: "LV systolic function (visual)", section: "lv", kind: "select", options: ["", "Hyperdynamic", "Normal", "Borderline low", "Mildly impaired", "Moderately impaired", "Severely impaired"], caveats: ["ef_visual"] },
   { key: "ef", label: "LVEF (biplane Simpson's)", section: "lv", kind: "num", unit: "%", caveats: ["simpson"] },
-  { key: "edv", label: "LV end-diastolic volume", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"], advanced: true },
-  { key: "esv", label: "LV end-systolic volume", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"], advanced: true },
+  { key: "edv_4c", label: "A4C EDV", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"] },
+  { key: "esv_4c", label: "A4C ESV", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"] },
+  { key: "edv_2c", label: "A2C EDV", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"] },
+  { key: "esv_2c", label: "A2C ESV", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"] },
+  { key: "edv", label: "Biplane EDV (from the machine)", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"], advanced: true },
+  { key: "esv", label: "Biplane ESV (from the machine)", section: "lv", kind: "num", unit: "ml", caveats: ["simpson"], advanced: true },
   { key: "lvidd", label: "LVIDd", section: "lv", kind: "num", unit: "cm", caveats: ["linear_lv"] },
   { key: "lvids", label: "LVIDs", section: "lv", kind: "num", unit: "cm", caveats: ["linear_lv"], advanced: true },
   { key: "ivsd", label: "IVSd", section: "lv", kind: "num", unit: "cm", caveats: ["linear_lv"] },
   { key: "lvpwd", label: "LVPWd", section: "lv", kind: "num", unit: "cm", caveats: ["linear_lv"] },
   { key: "mapse", label: "MAPSE (lateral)", section: "lv", kind: "num", unit: "mm", caveats: ["mapse"], advanced: true },
   { key: "lv_gls", label: "LV global longitudinal strain", section: "lv", kind: "num", unit: "%", caveats: ["strain"], placeholder: "e.g. -19" },
-  { key: "rwma", label: "Regional wall motion", section: "lv", kind: "text", placeholder: "e.g. none / hypokinetic anterior wall" },
+  { key: "rwma_seg", label: "Regional wall motion (17 segments)", section: "lv", kind: "segments", caveats: ["rwma"] },
+  { key: "rwma", label: "Wall motion comment", section: "lv", kind: "text", placeholder: "e.g. tethered inferior wall, LBBB septal motion", advanced: true },
   { key: "lvot_d", label: "LVOT diameter", section: "lv", kind: "num", unit: "cm", caveats: ["lvot_d"] },
   { key: "lvot_vti", label: "LVOT VTI", section: "lv", kind: "num", unit: "cm", caveats: ["lvot_vti"] },
 
   // RV
+  { key: "rv_size_vis", label: "RV size (visual)", section: "rv", kind: "select", options: ["", "Normal", "Mildly dilated", "Moderately dilated", "Severely dilated (RV ≥ LV)"], caveats: ["visual_size", "rv_size"] },
+  { key: "rv_func_vis", label: "RV systolic function (visual)", section: "rv", kind: "select", options: ["", "Normal", "Mildly impaired", "Moderately impaired", "Severely impaired"], caveats: ["visual_size", "tapse"] },
   { key: "rv_basal", label: "RV basal diameter (RV-focused A4C)", section: "rv", kind: "num", unit: "mm", caveats: ["rv_size"] },
   { key: "rv_mid", label: "RV mid diameter", section: "rv", kind: "num", unit: "mm", caveats: ["rv_size"], advanced: true },
   { key: "rv_lv", label: "RV:LV basal ratio", section: "rv", kind: "num", unit: "", caveats: ["rv_size"] },
@@ -149,6 +160,8 @@ export const FIELDS: FieldDef[] = [
   { key: "septum", label: "Interventricular septum", section: "rv", kind: "select", options: ["", "Normal", "Flattened in diastole (volume load)", "Flattened in systole (pressure load)", "Flattened throughout"], caveats: ["septum"] },
 
   // Atria
+  { key: "la_size_vis", label: "LA size (visual)", section: "atria", kind: "select", options: ["", "Normal", "Mildly dilated", "Moderately dilated", "Severely dilated"], caveats: ["visual_size", "la_vol"] },
+  { key: "ra_size_vis", label: "RA size (visual)", section: "atria", kind: "select", options: ["", "Normal", "Mildly dilated", "Moderately dilated", "Severely dilated"], caveats: ["visual_size", "ra_area"] },
   { key: "la_vol", label: "LA volume (biplane)", section: "atria", kind: "num", unit: "ml", caveats: ["la_vol"] },
   { key: "lavi", label: "LA volume index (if measured directly)", section: "atria", kind: "num", unit: "ml/m²", caveats: ["la_vol"], advanced: true },
   { key: "la_rs", label: "LA reservoir strain (LARS)", section: "atria", kind: "num", unit: "%", caveats: ["strain"], advanced: true },
@@ -212,6 +225,7 @@ export const FIELDS: FieldDef[] = [
   { key: "tamponade", label: "Tamponade features", section: "peri", kind: "select", options: ["", "None", "RA systolic collapse", "RV diastolic collapse", "Plethoric IVC + chamber collapse", "Exaggerated respiratory variation"], caveats: ["effusion"] },
 
   // Pleura and lungs
+  { key: "other_findings", label: "Other findings", section: "other", kind: "longtext", placeholder: "e.g. LV apical thrombus 1.5 × 1.0 cm, mobile; pacing wire in RV; mass on AV; vegetation", caveats: ["other_findings"] },
   { key: "pl_sep_r", label: "Right effusion: max separation", section: "pleura", kind: "num", unit: "mm", caveats: ["effusion_vol"] },
   { key: "pl_char_r", label: "Right effusion: appearance", section: "pleura", kind: "select", options: ["", ...PL_CHAR], caveats: ["lus"] },
   { key: "pl_sep_l", label: "Left effusion: max separation", section: "pleura", kind: "num", unit: "mm", caveats: ["effusion_vol"] },
@@ -249,7 +263,7 @@ const bySex = (sex: Sex, m: number, f: number) => (sex === "F" ? f : m);
 // ---------- Derived values ----------
 export interface Derived {
   bsa?: number; lvot_area?: number; sv?: number; svi?: number; co?: number; ci?: number;
-  ef_calc?: number; edvi?: number; esvi?: number; fs?: number; rwt?: number; lv_mass?: number; lvmi?: number;
+  ef_calc?: number; ef_4c?: number; ef_2c?: number; edv_bp?: number; esv_bp?: number; edvi?: number; esvi?: number; fs?: number; rwt?: number; lv_mass?: number; lvmi?: number;
   lavi?: number; e_a?: number; e_eprime?: number; e_sept_ratio?: number; rap?: number; rvsp?: number; mpap?: number;
   tapse_spap?: number; fac?: number; ava?: number; avai?: number; dvi?: number; av_peakpg?: number; mva_pht?: number;
 }
@@ -274,7 +288,13 @@ export function derive(v: Values): Derived {
   if (d.sv && d.bsa) d.svi = d.sv / d.bsa;
   if (d.sv && hr) d.co = (d.sv * hr) / 1000;
   if (d.co && d.bsa) d.ci = d.co / d.bsa;
-  const edv = num(v, "edv"), esv = num(v, "esv");
+  // Monoplane EFs and a biplane estimate from the A4C and A2C volumes (mean of the two planes)
+  const ed4 = num(v, "edv_4c"), es4 = num(v, "esv_4c"), ed2 = num(v, "edv_2c"), es2 = num(v, "esv_2c");
+  if (ed4 && es4 !== undefined && ed4 > es4) d.ef_4c = ((ed4 - es4) / ed4) * 100;
+  if (ed2 && es2 !== undefined && ed2 > es2) d.ef_2c = ((ed2 - es2) / ed2) * 100;
+  if (ed4 && ed2) d.edv_bp = (ed4 + ed2) / 2;
+  if (es4 !== undefined && es2 !== undefined) d.esv_bp = (es4 + es2) / 2;
+  const edv = num(v, "edv") ?? d.edv_bp ?? ed4 ?? ed2, esv = num(v, "esv") ?? d.esv_bp ?? es4 ?? es2;
   if (edv && esv !== undefined && edv > esv) d.ef_calc = ((edv - esv) / edv) * 100;
   if (edv && d.bsa) d.edvi = edv / d.bsa;
   if (esv && d.bsa) d.esvi = esv / d.bsa;
@@ -309,6 +329,7 @@ export function derive(v: Values): Derived {
 
 export const DERIVED_LABELS: Partial<Record<keyof Derived, [string, string, number]>> = {
   bsa: ["BSA (Mosteller)", "m²", 2], sv: ["Stroke volume", "ml", 0], svi: ["SV index", "ml/m²", 0], co: ["Cardiac output", "L/min", 1], ci: ["Cardiac index", "L/min/m²", 1],
+  ef_4c: ["EF, A4C monoplane", "%", 0], ef_2c: ["EF, A2C monoplane", "%", 0], edv_bp: ["Biplane EDV (mean A4C/A2C)", "ml", 0], esv_bp: ["Biplane ESV (mean A4C/A2C)", "ml", 0],
   ef_calc: ["EF from volumes", "%", 0], edvi: ["EDV index", "ml/m²", 0], esvi: ["ESV index", "ml/m²", 0], fs: ["Fractional shortening", "%", 0],
   rwt: ["Relative wall thickness", "", 2], lv_mass: ["LV mass (linear)", "g", 0], lvmi: ["LV mass index", "g/m²", 0], lavi: ["LA volume index", "ml/m²", 0],
   e_a: ["E/A", "", 1], e_eprime: ["E/e′ (average)", "", 1], rap: ["Estimated RAP", "mmHg", 0], rvsp: ["Estimated RVSP", "mmHg", 0], mpap: ["Estimated mean PAP", "mmHg", 0],
@@ -414,6 +435,8 @@ function laviGrade(n: number, std: Standard = "BSE"): Grade {
   return n <= 34 ? g("normal", "Normal (≤ 34 ml/m²)") : n <= 41 ? g("mild", "Mildly dilated (35–41)") : n <= 48 ? g("moderate", "Moderately dilated (42–48)") : g("severe", "Severely dilated (> 48)");
 }
 
+const visGrade = (s: string): Grade | null => !s ? null : /^Normal/.test(s) ? g("normal", "Normal (visual)") : /^Small/.test(s) ? g("info", "Small / underfilled (visual)") : /^Mild/.test(s) ? g("mild", `${s.replace(/ \(.*\)/, "")} (visual)`) : /^Moderate/.test(s) ? g("moderate", `${s.replace(/ \(.*\)/, "")} (visual)`) : g("severe", `${s.replace(/ \(.*\)/, "")} (visual)`);
+export const SELECT_GRADERS: Record<string, (s: string) => Grade | null> = { lv_size_vis: visGrade, rv_size_vis: visGrade, rv_func_vis: visGrade, la_size_vis: visGrade, ra_size_vis: visGrade };
 const plGrade = (n: number) => n === 0 ? g("normal", "No effusion") : g(n >= 50 ? "moderate" : "info", `≈ ${Math.round((20 * n) / 50) * 50} ml (Balik)`);
 Object.assign(GRADERS, {
   pl_sep_r: plGrade, pl_sep_l: plGrade,
@@ -423,6 +446,8 @@ Object.assign(GRADERS, {
 
 export const DERIVED_GRADERS: Partial<Record<keyof Derived, (n: number, v: Values) => Grade | null>> = {
   ef_calc: (n, v) => GRADERS.ef(n, v, {}),
+  ef_4c: (n, v) => GRADERS.ef(n, v, {}),
+  ef_2c: (n, v) => GRADERS.ef(n, v, {}),
   edvi: (n, v) => {
     const s = sexOf(v); if (!s) return null;
     if (stdOf(v) === "BSE") return s === "M" ? bands(n, 79, 91, 103, DIL, " ml/m²") : bands(n, 70, 81, 91, DIL, " ml/m²");
@@ -455,6 +480,7 @@ export const DERIVED_GRADERS: Partial<Record<keyof Derived, (n: number, v: Value
 };
 
 export function gradeField(key: string, v: Values, d: Derived): Grade | null {
+  if (SELECT_GRADERS[key]) return SELECT_GRADERS[key](v[key] || "");
   const n = num(v, key);
   const fn = GRADERS[key];
   return n === undefined || !fn ? null : fn(n, v, d);
@@ -469,6 +495,7 @@ export function phProbability(v: Values, d: Derived): PhResult {
   const cats = new Set<string>();
   const rvlv = num(v, "rv_lv");
   if (rvlv && rvlv > 1.0) { signs.push("RV/LV basal ratio > 1.0"); cats.add("A"); }
+  else if (!rvlv && v.rv_size_vis?.includes("RV ≥ LV")) { signs.push("RV ≥ LV (visual)"); cats.add("A"); }
   if (v.septum && v.septum.startsWith("Flattened")) { signs.push("septal flattening"); cats.add("A"); }
   const at = num(v, "pv_at");
   if ((at && at < 105) || v.pv_notch?.startsWith("Yes")) { signs.push("RVOT AT < 105 ms and/or notching"); cats.add("B"); }
@@ -616,11 +643,19 @@ export function buildReport(v: Values): Report {
   const efTxt = ef !== undefined ? GRADERS.ef(ef, v, d)!.text.replace(/ \(.*\)/, "") : "";
   if (v.lv_visual || ef !== undefined) {
     const fn = v.lv_visual ? lc(v.lv_visual) : lc(efTxt);
-    lv.push(`${fn.charAt(0).toUpperCase() + fn.slice(1)} LV systolic function${ef !== undefined ? ` (EF ${fmt(ef, 0)}%${num(v, "ef") !== undefined ? ", biplane" : ", from volumes"})` : ""}.`);
+    const efSrc = num(v, "ef") !== undefined ? "biplane" : num(v, "edv") !== undefined ? "biplane volumes" : d.edv_bp !== undefined && d.esv_bp !== undefined ? "biplane, mean of A4C and A2C volumes" : num(v, "edv_4c") !== undefined ? "A4C monoplane" : "A2C monoplane";
+    lv.push(`${fn.charAt(0).toUpperCase() + fn.slice(1)} LV systolic function${ef !== undefined ? ` (EF ${fmt(ef, 0)}%, ${efSrc})` : ""}.`);
+    const vols = [d.ef_4c !== undefined && `A4C EDV ${meas(v, "edv_4c", 0)}, ESV ${meas(v, "esv_4c", 0)}, EF ${fmt(d.ef_4c, 0)}%`, d.ef_2c !== undefined && `A2C EDV ${meas(v, "edv_2c", 0)}, ESV ${meas(v, "esv_2c", 0)}, EF ${fmt(d.ef_2c, 0)}%`].filter(Boolean);
+    if (vols.length) lv.push(`${vols.join("; ")}${d.edvi ? `. EDV index ${fmt(d.edvi, 0)} ml/m²${d.esvi ? `, ESV index ${fmt(d.esvi, 0)} ml/m²` : ""}` : ""}.`);
     if (v.lv_visual && v.lv_visual !== "Normal") findings.push(`${v.lv_visual} LV systolic function`);
     else if (!v.lv_visual && ef !== undefined && ef < 55) findings.push(`${efTxt} LV systolic function (EF ${fmt(ef, 0)}%)`);
   }
   const lvidd = gtxt("lvidd");
+  if (v.lv_size_vis) {
+    lv.push(`LV size (visual): ${lc(v.lv_size_vis)}.`);
+    const edviG = d.edvi !== undefined ? DERIVED_GRADERS.edvi?.(d.edvi, v) : null;
+    if (v.lv_size_vis !== "Normal" && !isAbn(lvidd) && !isAbn(edviG ?? null)) findings.push(`${v.lv_size_vis} LV (visual estimate)`);
+  }
   if (num(v, "lvidd")) { lv.push(`LVIDd ${meas(v, "lvidd")}${lvidd ? ` (${lc(lvidd.text.replace(/ \(.*\)/, ""))})` : ""}.`); if (isAbn(lvidd)) findings.push(`${lvidd!.text.replace(/ \(.*\)/, "")} LV`); }
   const iv = gtxt("ivsd"), pw = gtxt("lvpwd");
   if (num(v, "ivsd") || num(v, "lvpwd")) {
@@ -633,8 +668,10 @@ export function buildReport(v: Values): Report {
       lv.push(`${pattern}.`); findings.push(pattern);
     }
   }
-  if (v.rwma) lv.push(`Regional wall motion: ${v.rwma}.`);
-  if (v.rwma && !/^(none|normal|no )/i.test(v.rwma)) findings.push(`Regional wall motion abnormality (${v.rwma})`);
+  const wm = summariseWm(v.rwma_seg);
+  if (wm) { lv.push(wm.text); if (wm.finding) findings.push(wm.finding); }
+  if (v.rwma) lv.push(`${wm ? "Comment" : "Regional wall motion"}: ${v.rwma}.`);
+  if (!wm && v.rwma && !/^(none|normal|no )/i.test(v.rwma)) findings.push(`Regional wall motion abnormality (${v.rwma})`);
   if (num(v, "mapse")) lv.push(`Lateral MAPSE ${meas(v, "mapse", 0)}.`);
   if (num(v, "lv_gls") !== undefined) { const gr = gtxt("lv_gls"); lv.push(`LV GLS −${fmt(Math.abs(num(v, "lv_gls")!), 1)}%${gr ? ` (${lc(gr.text.replace(/ \(.*\)/, ""))})` : ""}.`); if (isAbn(gr)) findings.push(`${gr!.level === "borderline" ? "Borderline" : "Reduced"} LV global longitudinal strain (−${fmt(Math.abs(num(v, "lv_gls")!), 1)}%)`); }
   if (d.sv) {
@@ -642,6 +679,14 @@ export function buildReport(v: Values): Report {
     if (d.svi !== undefined && d.svi < 35) findings.push(`Low stroke volume index (${fmt(d.svi, 0)} ml/m²)`);
   } else if (num(v, "lvot_vti")) { lv.push(`LVOT VTI ${meas(v, "lvot_vti")}.`); const gr = gtxt("lvot_vti"); if (gr && gr.level === "mild") findings.push(`Low LVOT VTI (${meas(v, "lvot_vti")})`); }
   if (lv.length) out.push("LEFT VENTRICLE", ...lv, "");
+
+  // LV diastolic function (straight after systolic)
+  const ds = diastology(v, d);
+  const dsBits = [num(v, "e") && `E ${meas(v, "e", 0)}`, num(v, "a") && `A ${meas(v, "a", 0)}`, d.e_a && `E/A ${fmt(d.e_a, 1)}`, num(v, "dt") && `DT ${meas(v, "dt", 0)}`, num(v, "e_sept") && `septal e′ ${meas(v, "e_sept")}`, num(v, "e_lat") && `lateral e′ ${meas(v, "e_lat")}`, d.e_eprime && `average E/e′ ${fmt(d.e_eprime, 1)}`].filter(Boolean);
+  if (dsBits.length || ds.graded) {
+    out.push("LV DIASTOLIC FUNCTION", ds.conclusion, ...(dsBits.length ? [`${dsBits.join(", ")}.`] : []), ...(ds.detail ? [ds.detail] : []), "");
+    if (ds.lap === "elevated" || /^Grade/.test(ds.conclusion)) findings.push(ds.conclusion.replace(/\.$/, ""));
+  }
 
   // RV
   const rv: string[] = [];
@@ -651,13 +696,16 @@ export function buildReport(v: Values): Report {
   if (num(v, "rv_lv")) size.push(`RV:LV ratio ${fmt(num(v, "rv_lv"), 1)}`);
   const rvDil = [gtxt("rv_basal"), gtxt("rv_mid"), gtxt("rv_lv")].filter(isAbn) as Grade[];
   if (size.length) { rv.push(`${rvDil.length ? (rvDil.some((x) => x.level === "severe") ? "Severely dilated" : "Dilated") : "Normal size"} RV (${size.join(", ")}).`); if (rvDil.length) findings.push(`${rvDil.some((x) => x.level === "severe") ? "Severely dilated" : "Dilated"} RV`); }
+  if (v.rv_size_vis) { rv.push(`RV size (visual): ${lc(v.rv_size_vis)}.`); if (v.rv_size_vis !== "Normal" && !rvDil.length) findings.push(`${v.rv_size_vis.replace(/ \(.*\)/, "")} RV (visual estimate)`); }
   const fnBits: string[] = [];
   const tg = gtxt("tapse"), sg = gtxt("rv_s");
   if (num(v, "tapse")) fnBits.push(`TAPSE ${meas(v, "tapse", 0)}`);
   if (num(v, "rv_s")) fnBits.push(`S′ ${meas(v, "rv_s")}`);
   if (d.fac !== undefined) fnBits.push(`FAC ${fmt(d.fac, 0)}%`);
   const facAbn = d.fac !== undefined && d.fac < 35;
-  if (fnBits.length) { const abn = isAbn(tg) || isAbn(sg) || facAbn; rv.push(`${abn ? "Impaired" : "Normal"} RV systolic function (${fnBits.join(", ")}).`); if (abn) findings.push("Impaired RV systolic function"); }
+  const rvFnAbn = isAbn(tg) || isAbn(sg) || facAbn;
+  if (fnBits.length) { rv.push(`${rvFnAbn ? "Impaired" : "Normal"} RV systolic function (${fnBits.join(", ")}).`); if (rvFnAbn) findings.push("Impaired RV systolic function"); }
+  if (v.rv_func_vis) { rv.push(`RV systolic function (visual): ${lc(v.rv_func_vis)}.`); if (v.rv_func_vis !== "Normal" && !rvFnAbn) findings.push(`${v.rv_func_vis} RV systolic function (visual estimate)`); }
   if (num(v, "rv_fws") !== undefined) { const gr = gtxt("rv_fws"); rv.push(`RV free wall strain −${fmt(Math.abs(num(v, "rv_fws")!), 1)}%${isAbn(gr) ? " (reduced)" : ""}.`); if (isAbn(gr)) findings.push("Reduced RV free wall strain"); }
   const rw = gtxt("rv_wall"); if (num(v, "rv_wall")) rv.push(`RV free wall ${meas(v, "rv_wall", 0)}${isAbn(rw) ? " (hypertrophied)" : ""}.`);
   if (v.septum) { rv.push(v.septum === "Normal" ? "Normal septal motion." : `Septum ${lc(v.septum)}.`); if (v.septum !== "Normal") findings.push(`Septal ${lc(v.septum.replace("Flattened", "flattening"))}`); }
@@ -665,12 +713,18 @@ export function buildReport(v: Values): Report {
 
   // Atria
   const la: string[] = [];
-  if (d.lavi !== undefined) { const gr = laviGrade(d.lavi, stdOf(v)); la.push(`LA: ${lc(gr.text.replace(/ \(.*\)/, ""))} (LAVI ${fmt(d.lavi, 0)} ml/m²${num(v, "la_vol") ? `, volume ${meas(v, "la_vol", 0)}` : ""}).`); if (isAbn(gr)) findings.push(`${gr.text.replace(/ \(.*\)/, "")} LA`); }
+  let laMeasAbn = false;
+  if (d.lavi !== undefined) { const gr = laviGrade(d.lavi, stdOf(v)); la.push(`LA: ${lc(gr.text.replace(/ \(.*\)/, ""))} (LAVI ${fmt(d.lavi, 0)} ml/m²${num(v, "la_vol") ? `, volume ${meas(v, "la_vol", 0)}` : ""}).`); if (isAbn(gr)) { laMeasAbn = true; findings.push(`${gr.text.replace(/ \(.*\)/, "")} LA`); } }
   else if (num(v, "la_vol")) la.push(`LA volume ${meas(v, "la_vol", 0)} (enter height and weight to index).`);
-  if (num(v, "la_area")) { const gr = gtxt("la_area"); la.push(`LA area ${meas(v, "la_area", 0)}${isAbn(gr) ? " (dilated)" : ""}.`); if (d.lavi === undefined && isAbn(gr)) findings.push("Dilated LA"); }
+  if (num(v, "la_area")) { const gr = gtxt("la_area"); la.push(`LA area ${meas(v, "la_area", 0)}${isAbn(gr) ? " (dilated)" : ""}.`); if (isAbn(gr)) { if (d.lavi === undefined) findings.push("Dilated LA"); laMeasAbn = true; } }
+  if (v.la_size_vis) { la.push(`LA size (visual): ${lc(v.la_size_vis)}.`); if (v.la_size_vis !== "Normal" && !laMeasAbn && d.lavi === undefined) findings.push(`${v.la_size_vis} LA (visual estimate)`); }
   if (num(v, "la_rs") !== undefined) { const gr = gtxt("la_rs"); la.push(`LA reservoir strain ${fmt(num(v, "la_rs"), 0)}%${isAbn(gr) ? " (≤ 18%: supports raised LA pressure)" : ""}.`); }
   if (la.length) out.push("LEFT ATRIUM", ...la, "");
-  if (num(v, "ra_area")) { const gr = gtxt("ra_area"); out.push("RIGHT ATRIUM", `${isAbn(gr) ? "Dilated" : "Normal size"} RA (area ${meas(v, "ra_area", 0)}).`, ""); if (isAbn(gr)) findings.push("Dilated RA"); }
+  const ra: string[] = [];
+  const raG = gtxt("ra_area");
+  if (num(v, "ra_area")) { ra.push(`${isAbn(raG) ? "Dilated" : "Normal size"} RA (area ${meas(v, "ra_area", 0)}).`); if (isAbn(raG)) findings.push("Dilated RA"); }
+  if (v.ra_size_vis) { ra.push(`RA size (visual): ${lc(v.ra_size_vis)}.`); if (v.ra_size_vis !== "Normal" && num(v, "ra_area") === undefined) findings.push(`${v.ra_size_vis} RA (visual estimate)`); }
+  if (ra.length) out.push("RIGHT ATRIUM", ...ra, "");
 
   // Valves
   const val: string[] = [];
@@ -739,13 +793,6 @@ export function buildReport(v: Values): Report {
     if (ph.probability !== "Low") findings.push(`${ph.probability} probability of pulmonary hypertension${d.rvsp ? ` (RVSP ~${fmt(d.rvsp, 0)} mmHg)` : ""}`);
   }
 
-  // Diastology
-  const ds = diastology(v, d);
-  const dsBits = [num(v, "e") && `E ${meas(v, "e", 0)}`, num(v, "a") && `A ${meas(v, "a", 0)}`, d.e_a && `E/A ${fmt(d.e_a, 1)}`, num(v, "dt") && `DT ${meas(v, "dt", 0)}`, num(v, "e_sept") && `septal e′ ${meas(v, "e_sept")}`, num(v, "e_lat") && `lateral e′ ${meas(v, "e_lat")}`, d.e_eprime && `average E/e′ ${fmt(d.e_eprime, 1)}`].filter(Boolean);
-  if (dsBits.length || ds.graded) {
-    out.push("DIASTOLOGY", ds.conclusion, ...(dsBits.length ? [`${dsBits.join(", ")}.`] : []), ...(ds.detail ? [ds.detail] : []), "");
-    if (ds.lap === "elevated" || /^Grade/.test(ds.conclusion)) findings.push(ds.conclusion.replace(/\.$/, ""));
-  }
 
   // Pericardium
   if (v.eff) {
@@ -759,6 +806,13 @@ export function buildReport(v: Values): Report {
   // Pleura and lungs
   const pl = pleuraText(v);
   if (pl.lines.length) { out.push("PLEURA AND LUNGS", ...pl.lines, ""); findings.push(...pl.findings); }
+
+  // Other findings (free text)
+  const other = (v.other_findings || "").trim();
+  if (other) {
+    out.push("OTHER FINDINGS", /[.!?]$/.test(other) ? other : `${other}.`, "");
+    findings.push(other.replace(/[.\s]+$/, ""));
+  }
 
   out.push("SUMMARY");
   if (findings.length) findings.forEach((f, i) => out.push(`${i + 1}. ${f}.`));

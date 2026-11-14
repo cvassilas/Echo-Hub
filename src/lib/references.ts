@@ -72,7 +72,7 @@ export const CAVEAT_REFS: Record<string, string[]> = {
   lus: ["volpicelli2012", "lichtenstein2008"], lus_score: ["soummer2012", "volpicelli2012"], effusion_vol: ["balik2006"], diaphragm: ["dinino2014", "boussuges2009"],
   tcd: ["aaslid1982", "lindegaard1989", "bouzat2011", "robba2019", "aomrc2008"], onsd: ["robba2018", "dubourg2011", "robba2019"],
   pvr: ["abbas2003", "humbert2022"], bsa: ["mosteller1987", "lang2015"], bernoulli: ["quinones2002", "baumgartner2009"], qpqs: ["quinones2002"], svr: ["quinones2002"],
-  rwma: ["lang2015"], rv_wall: ["rudski2010", "lang2015"], pv_flow: ["nagueh2025"], pa_size: ["humbert2022"], rhythm: ["nagueh2025", "lang2015"],
+  rwma: ["lang2015"], visual_size: ["lang2015", "rudski2010", "bseMds2020"], other_findings: ["lang2015", "mitchell2019"], rv_wall: ["rudski2010", "lang2015"], pv_flow: ["nagueh2025"], pa_size: ["humbert2022"], rhythm: ["nagueh2025", "lang2015"],
   image_quality: ["bseMds2020", "mitchell2019"], reference_ranges: ["harkness2020", "lang2015"],
 };
 

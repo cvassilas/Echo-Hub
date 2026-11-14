@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown, BookPlus } from "lucide-react";
 import { toLogEntry, sendToClinicalLogs } from "../lib/clinicalLogs";
+import { RwmaChart } from "./RwmaChart";
 import { Share } from "@capacitor/share";
 import { Capacitor } from "@capacitor/core";
 import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDef, Derived, derive, gradeField, buildReport, phProbability, diastology, DERIVED_LABELS, DERIVED_GRADERS, fmt, num, vexusApplies, vexus, hvLevel, pvLevel, irvLevel, portalPF } from "../lib/echo";
@@ -10,7 +11,7 @@ import { saveFile } from "../lib/saveFile";
 
 const DERIVED_BY_SECTION: Partial<Record<SectionId, (keyof Derived)[]>> = {
   context: ["bsa"],
-  lv: ["ef_calc", "edvi", "esvi", "fs", "rwt", "lv_mass", "lvmi", "sv", "svi", "co", "ci"],
+  lv: ["ef_4c", "ef_2c", "edv_bp", "esv_bp", "ef_calc", "edvi", "esvi", "fs", "rwt", "lv_mass", "lvmi", "sv", "svi", "co", "ci"],
   rv: ["fac", "tapse_spap"],
   atria: ["lavi"],
   av: ["av_peakpg", "ava", "avai", "dvi"],
@@ -22,7 +23,7 @@ const DERIVED_BY_SECTION: Partial<Record<SectionId, (keyof Derived)[]>> = {
 const DERIVED_BY_VIEW: Partial<Record<ViewId, (keyof Derived)[]>> = {
   context: ["bsa"],
   plax: ["fs", "rwt", "lv_mass", "lvmi"],
-  a4c: ["ef_calc", "edvi", "esvi", "e_a", "e_eprime", "lavi", "rvsp", "mpap", "mva_pht"],
+  a4c: ["ef_4c", "ef_2c", "edv_bp", "esv_bp", "ef_calc", "edvi", "esvi", "e_a", "e_eprime", "lavi", "rvsp", "mpap", "mva_pht"],
   rvf: ["fac", "tapse_spap"],
   a5c: ["sv", "svi", "co", "ci", "av_peakpg", "ava", "avai", "dvi"],
   ivcv: ["rap"],
@@ -199,7 +200,7 @@ const LivePreview: React.FC<{ v: Record<string, string>; onOpen: () => void }> =
   );
 };
 
-const wide = (f: FieldDef) => f.kind === "text" || (f.kind === "select" && (f.options || []).some((o) => o.length > 14)) || f.label.length > 24;
+const wide = (f: FieldDef) => f.kind === "text" || f.kind === "longtext" || f.kind === "segments" || (f.kind === "select" && (f.options || []).some((o) => o.length > 14)) || f.label.length > 24;
 
 const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof gradeField>; onTips: () => void }> = ({ f, value, grade, onTips }) => (
   <div>
@@ -207,7 +208,12 @@ const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof 
       <label className="text-[11.5px] font-semibold text-[var(--c-muted)] leading-tight">{f.label}{f.unit ? <span className="font-normal"> ({f.unit})</span> : null}</label>
       {f.caveats?.length ? <InfoButton label={f.label} onClick={onTips} /> : null}
     </div>
-    {f.kind === "select" ? (
+    {f.kind === "segments" ? (
+      <RwmaChart value={value} onChange={(x) => setValue(f.key, x)} />
+    ) : f.kind === "longtext" ? (
+      <textarea aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} placeholder={f.placeholder || ""} rows={4}
+        className={`${inputCls} min-h-[96px] py-2.5 leading-snug resize-y`} />
+    ) : f.kind === "select" ? (
       <select aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} className={inputCls}>
         {f.options!.map((o) => <option key={o} value={o}>{o || "–"}</option>)}
       </select>
