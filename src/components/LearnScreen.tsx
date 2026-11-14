@@ -6,6 +6,7 @@ import { Diagram, DIAGRAMS } from "./Diagrams";
 import { card, inputCls, Bullets, SectionTitle, CaveatList, RefList } from "./ui";
 import { viewRefs } from "../lib/references";
 import { LECTURE_LINKS, topicVideos } from "../lib/links";
+import { TOPICS, Topic } from "../lib/topics";
 import { PlayCircle, ExternalLink } from "lucide-react";
 
 const CONCEPTS = ["windows", "doppler", "gates", "inflow", "pisa", "vexus_place", "tcd_place", "lung_zones"];
@@ -17,14 +18,16 @@ export const LearnScreen: React.FC = () => {
   const [view, setView] = useState<ViewGuide | null>(null);
   const [caveat, setCaveat] = useState<string | null>(null);
   const [concept, setConcept] = useState<string | null>(null);
+  const [topic, setTopic] = useState<Topic | null>(null);
   const [q, setQ] = useState("");
   // Open topics at the top; going back returns to the same place in the list.
   const listY = useRef(0);
   const open = (fn: () => void) => { listY.current = window.scrollY; fn(); scrollToAfterPaint(0); };
-  const back = () => { setView(null); setCaveat(null); setConcept(null); scrollToAfterPaint(listY.current); };
-  useBackHandler(!!(view || caveat || concept), back);
+  const back = () => { setView(null); setCaveat(null); setConcept(null); setTopic(null); scrollToAfterPaint(listY.current); };
+  useBackHandler(!!(view || caveat || concept || topic), back);
 
   if (view) return <ViewPage v={view} onBack={back} />;
+  if (topic) return <TopicPage t={topic} onBack={back} />;
   if (caveat) return (
     <div className="space-y-3">
       <BackBar onBack={back} title="Measurement caveats" />
@@ -73,6 +76,24 @@ export const LearnScreen: React.FC = () => {
           </div>
         </div>
       )}
+
+      {(() => {
+        const list = TOPICS.filter((t) => !ql || [t.title, t.summary, ...t.sections.flatMap((x) => x.items), ...(t.table?.rows.flat() || [])].join(" ").toLowerCase().includes(ql));
+        return list.length ? (
+          <div className={`${card} p-3 space-y-1.5`}>
+            <SectionTitle>Clinical topics</SectionTitle>
+            {list.map((t) => (
+              <button key={t.id} type="button" onClick={() => open(() => setTopic(t))} className="w-full flex items-center gap-3 text-left bg-[var(--c-surface2)] rounded-2xl p-3">
+                <span className="flex-1 min-w-0">
+                  <span className="block text-sm font-bold text-[var(--c-text)]">{t.title}</span>
+                  <span className="block text-[11px] text-[var(--c-muted)] line-clamp-2">{t.summary}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-[var(--c-muted)] shrink-0" />
+              </button>
+            ))}
+          </div>
+        ) : null;
+      })()}
 
       {groups.map((gname) => {
         const list = views.filter((v) => v.group === gname);
@@ -249,5 +270,33 @@ const LinksCard: React.FC = () => (
         </div>
       </div>
     ))}
+  </div>
+);
+
+const TopicPage: React.FC<{ t: Topic; onBack: () => void }> = ({ t, onBack }) => (
+  <div className="space-y-3">
+    <BackBar onBack={onBack} title="Learn" />
+    <h2 className="text-lg font-bold text-[var(--c-text)]">{t.title}</h2>
+    <div className={`${card} p-4`}><p className="text-[13.5px] leading-relaxed text-[var(--c-text2)]">{t.summary}</p></div>
+    {t.diagram && <div className={`${card} p-3`}><Diagram id={t.diagram} /></div>}
+    {t.table && (
+      <div className={`${card} p-3 space-y-2`}>
+        <SectionTitle>{t.table.title}</SectionTitle>
+        <div className="overflow-x-auto -mx-1">
+          <table className="w-full text-[12.5px] border-separate border-spacing-y-1 min-w-[460px]">
+            <thead><tr>{t.table.head.map((h) => <th key={h} className="text-left px-2 py-1 text-[11px] uppercase tracking-wider text-[var(--c-muted)] font-bold">{h}</th>)}</tr></thead>
+            <tbody>{t.table.rows.map((r) => (
+              <tr key={r[0]} className="bg-[var(--c-surface2)]">
+                {r.map((c, i) => <td key={i} className={`px-2 py-2 align-top leading-snug ${i === 0 ? "font-bold text-[var(--c-text)] rounded-l-xl" : "text-[var(--c-text2)]"} ${i === r.length - 1 ? "rounded-r-xl" : ""}`}>{c}</td>)}
+              </tr>
+            ))}</tbody>
+          </table>
+        </div>
+        <p className="text-[10.5px] text-[var(--c-muted)]">{t.table.source}</p>
+      </div>
+    )}
+    {t.sections.map((sec) => <Block key={sec.title} title={sec.title} items={sec.items} color={sec.color || "var(--c-teal)"} />)}
+    <WatchRow id={t.id} name={t.title} />
+    <div className={`${card} p-4`}><RefList keys={t.refs} title="References" /></div>
   </div>
 );

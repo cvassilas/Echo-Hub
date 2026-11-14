@@ -33,6 +33,7 @@ const TOPIC: Record<string, string> = {
   psax_pm: "parasternal short axis papillary muscle", psax_apex: "parasternal short axis apex", a4c: "apical four chamber", a5c: "apical five chamber LVOT VTI",
   a2c: "apical two chamber", a3c: "apical three chamber", sc4c: "subcostal four chamber", ivc: "IVC assessment", ssn: "suprasternal aortic arch",
   vexus_hv: "VExUS hepatic vein Doppler", vexus_pv: "VExUS portal vein Doppler", vexus_irv: "VExUS intrarenal venous Doppler",
+  constriction: "constrictive pericarditis vs restrictive cardiomyopathy echo",
   lus: "lung ultrasound", tcd: "transcranial Doppler", onsd: "optic nerve sheath diameter",
   windows: "echo windows", doppler: "Doppler echocardiography basics", inflow: "diastolic function echo", pisa: "PISA mitral regurgitation",
 };

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useId } from "react";
-import { Vexus, Lung, Tcd, Onsd } from "./Diagrams2";
+import { Vexus, Lung, Tcd, Onsd, Constriction } from "./Diagrams2";
 import { TcdPlacement, VexusPlacement, LungZones, DiaphragmPlacement, CardiacGates } from "./Diagrams3";
 
 /**
@@ -507,6 +507,7 @@ export const DIAGRAMS: Record<string, { title: string; el: React.FC }> = {
   lung: { title: "Lung ultrasound signs", el: Lung },
   tcd: { title: "Transcranial Doppler waveforms", el: Tcd },
   onsd: { title: "Optic nerve sheath", el: Onsd },
+  constriction: { title: "Constriction vs restriction", el: Constriction },
   tcd_place: { title: "TCD windows and MCA sampling", el: TcdPlacement },
   vexus_place: { title: "VExUS probe and Doppler positions", el: VexusPlacement },
   lung_zones: { title: "Lung scanning zones", el: LungZones },

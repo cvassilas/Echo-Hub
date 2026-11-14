@@ -182,3 +182,45 @@ export const Onsd = () => (
     <T x={240} y={191} t="2 planes × 2 eyes, average" s={8.5} c="#dfe6e8" />
   </Svg>
 );
+
+// ---------- Constriction vs restriction ----------
+const inflowPath = (x: number, y: number, w: number, amp: number, eAmp: (k: number) => number, aAmp: number) => {
+  const beats = 5, pts: string[] = [];
+  for (let i = 0; i <= 200; i++) {
+    const u = (i / 200) * beats, k = Math.floor(u), t = u - k;
+    const f = eAmp(Math.min(k, beats - 1)) * g(t, 0.25, 0.07) + aAmp * g(t, 0.62, 0.06);
+    pts.push(`${(x + (i / 200) * w).toFixed(1)},${(y - f * amp).toFixed(1)}`);
+  }
+  return `M${x},${y} L${pts.join(" L")} L${x + w},${y} Z`;
+};
+
+export const Constriction = () => {
+  const cols = [[8, "Constriction", "#F2B33D"], [156, "Restriction", RED]] as const;
+  return (
+    <Svg h={250} label="Constriction versus restriction Doppler patterns">
+      {cols.map(([x, name, c], ci) => (
+        <g key={name}>
+          <T x={x + 68} y={14} t={name} s={10.5} b c={c} />
+          {/* respiration trace */}
+          <path d={Array.from({ length: 61 }, (_, i) => { const px = (i / 60) * 136; return `${i ? "L" : "M"}${x + px},${30 - 6 * Math.cos((2 * Math.PI * (px - 13.6)) / 54.4)}`; }).join(" ")} stroke={DOP} strokeWidth={1.2} fill="none" />
+          {[13.6, 40.8, 68, 95.2, 122.4].map((cx, i) => <T key={cx} x={x + cx} y={46} t={i % 2 ? "exp" : "insp"} s={7.5} c={DOP} />)}
+          <line x1={x} y1={98} x2={x + 136} y2={98} stroke="#59656c" strokeWidth={0.8} />
+          <path d={inflowPath(x, 98, 136, 44, (k) => (ci === 0 ? ([0.6, 1, 0.65, 1, 0.62][k]) : 1), ci === 0 ? 0.45 : 0.18)} fill={WAVE} opacity={0.8} stroke="#ffffff" strokeWidth={0.6} />
+          <T x={x + 68} y={112} t={ci === 0 ? "Mitral E falls > 25% on inspiration" : "Tall E, tiny A, no variation"} s={8} c={MUTED} />
+          {/* e′ bars */}
+          <T x={x + 68} y={132} t="Tissue Doppler e′ (cm/s)" s={8.5} c="#dfe6e8" />
+          {[["septal", ci === 0 ? 13 : 4], ["lateral", ci === 0 ? 9 : 5]].map(([lab, val], i) => (
+            <g key={lab as string}>
+              <rect x={x + 30 + i * 46} y={196 - (val as number) * 3.2} width={26} height={(val as number) * 3.2} rx={3} fill={i === 0 ? c : "#7D8E97"} opacity={0.85} />
+              <T x={x + 43 + i * 46} y={208} t={lab as string} s={8} c={MUTED} />
+              <T x={x + 43 + i * 46} y={192 - (val as number) * 3.2} t={`${val}`} s={8.5} c="#ffffff" />
+            </g>
+          ))}
+          <T x={x + 68} y={224} t={ci === 0 ? "Septal ≥ 9 and > lateral (reversus)" : "Both low (often < 6–7 cm/s)"} s={8} c={MUTED} />
+        </g>
+      ))}
+      <line x1={150} y1={6} x2={150} y2={232} stroke="#2b3438" />
+      <T x={150} y={245} t="Hepatic vein reversal: in expiration = constriction; in inspiration = restriction" s={7.8} c={DOP} />
+    </Svg>
+  );
+};
