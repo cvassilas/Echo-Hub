@@ -86,20 +86,29 @@ export const ReportScreen: React.FC = () => {
         const derived = s.derived.filter((k) => d[k] !== undefined);
         return (
           <div key={s.id} className={card}>
-            <button type="button" onClick={() => setOpen({ ...open, [s.id]: !isOpen })} className="w-full flex items-center justify-between px-4 py-3">
-              <span className="flex items-center gap-2 text-[16px] font-bold text-[var(--c-text)]">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}{s.title}</span>
+            <button type="button" id={`sec-${s.id}`} onClick={() => setOpen({ ...open, [s.id]: !isOpen })} className="w-full flex items-center justify-between px-4 py-4 scroll-mt-3">
+              <span className="flex items-center gap-2 text-[17px] font-bold text-[var(--c-text)]">{isOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}{s.title}</span>
               <span className="flex items-center gap-1.5 text-[10.5px] text-[var(--c-muted)]">
                 {abn > 0 && <span className="w-2 h-2 rounded-full" style={{ background: LEVEL_COLOR.moderate }} />}
-                {count > 0 && `${count} entered`}
+                {count > 0 && `${count}/${fields.length}`}
               </span>
             </button>
             {isOpen && (
               <div className="px-4 pb-4 space-y-2.5">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-2 gap-y-2.5">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-x-3 gap-y-4">
                   {shown.map((f) => <div key={f.key} className={wide(f) ? "col-span-2" : ""}><FieldRow f={f} value={v[f.key] || ""} grade={gradeField(f.key, v, d)} onTips={() => setTips(f)} /></div>)}
                 </div>
+                {(() => {
+                  const fillable = shown.filter((f) => !String(v[f.key] || "").trim() && (normalOption(f) || f.kind === "segments"));
+                  return fillable.length > 0 ? (
+                    <button type="button" onClick={() => fillable.forEach((f) => setValue(f.key, f.kind === "segments" ? "N".repeat(17) : normalOption(f)!))}
+                      className="m3-press w-full min-h-[46px] rounded-full border border-[var(--c-border2)] text-[14px] font-bold text-[var(--c-teal)]">
+                      Mark the rest normal ({fillable.length})
+                    </button>
+                  ) : null;
+                })()}
                 {adv.length > 0 && (
-                  <button type="button" onClick={() => setMore({ ...more, [s.id]: !more[s.id] })} className="text-[11px] font-bold text-[var(--c-teal)]">
+                  <button type="button" onClick={() => setMore({ ...more, [s.id]: !more[s.id] })} className="text-[13px] font-bold text-[var(--c-teal)] py-1">
                     {more[s.id] ? "Fewer measurements" : `More measurements (${adv.length})`}
                   </button>
                 )}
@@ -144,6 +153,20 @@ export const ReportScreen: React.FC = () => {
                     {ds.detail && <p className="text-[11px] text-[var(--c-text2)] mt-0.5">{ds.detail}</p>}
                   </div>
                 )}
+                {(() => {
+                  const vis = secs.filter((x) => x.id !== "vexus" || vexusApplies(v));
+                  const nx = vis[vis.findIndex((x) => x.id === s.id) + 1];
+                  return nx ? (
+                    <button type="button" onClick={() => { setOpen({ ...open, [s.id]: false, [nx.id]: true }); requestAnimationFrame(() => requestAnimationFrame(() => document.getElementById(`sec-${nx.id}`)?.scrollIntoView({ block: "start", behavior: "smooth" }))); }}
+                      className="m3-press w-full min-h-[48px] rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] text-[14.5px] font-bold flex items-center justify-center gap-1.5">
+                      Next: {nx.title} <ChevronRight className="w-4 h-4" />
+                    </button>
+                  ) : (
+                    <button type="button" onClick={() => setShowReport(true)} className="m3-press w-full min-h-[48px] rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] text-[14.5px] font-bold flex items-center justify-center gap-1.5">
+                      <FileText className="w-4 h-4" /> Generate report
+                    </button>
+                  );
+                })()}
               </div>
             )}
           </div>
@@ -200,30 +223,82 @@ const LivePreview: React.FC<{ v: Record<string, string>; onOpen: () => void }> =
   );
 };
 
-const wide = (f: FieldDef) => f.kind === "text" || f.kind === "longtext" || f.kind === "segments" || (f.kind === "select" && (f.options || []).some((o) => o.length > 14)) || f.label.length > 24;
+const wide = (f: FieldDef) => f.kind === "text" || f.kind === "longtext" || f.kind === "segments" || (useChips(f) && chipsWide(f)) || (f.kind === "select" && (f.options || []).some((o) => o.length > 14)) || f.label.length > 24;
 
-const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof gradeField>; onTips: () => void }> = ({ f, value, grade, onTips }) => (
-  <div>
-    <div className="flex items-center justify-between gap-2 mb-1">
-      <label className="text-[11.5px] font-semibold text-[var(--c-muted)] leading-tight">{f.label}{f.unit ? <span className="font-normal"> ({f.unit})</span> : null}</label>
-      {f.caveats?.length ? <InfoButton label={f.label} onClick={onTips} /> : null}
+/** Larger entry controls for the report form. */
+const entryCls = inputCls.replace("py-2.5 text-[15px]", "py-3.5 text-[17px] min-h-[54px]");
+
+/** Short option lists show as tap chips instead of a dropdown. */
+const useChips = (f: FieldDef) => f.kind === "select" && (f.options || []).filter(Boolean).length <= 6;
+const chipsWide = (f: FieldDef) => (f.options || []).filter(Boolean).join("").length > 26;
+
+/** Value probably entered in the wrong unit → suggested corrected value. */
+const MM_KEYS = new Set(["tapse", "mapse", "rv_basal", "rv_mid", "lvot_d_mm"]);
+function unitHint(f: FieldDef, raw: string): { to: string; why: string } | null {
+  const n = Number(raw.replace(",", "."));
+  if (f.kind !== "num" || !raw.trim() || !Number.isFinite(n) || n <= 0) return null;
+  const r = (x: number) => String(Math.round(x * 100) / 100);
+  if (f.unit === "cm" && n > 15) return { to: r(n / 10), why: `Looks like mm: use ${r(n / 10)} cm?` };
+  if (f.unit === "mm" && MM_KEYS.has(f.key) && n < 4) return { to: r(n * 10), why: `Looks like cm: use ${r(n * 10)} mm?` };
+  if (f.unit === "m/s" && n > 8) return { to: r(n / 100), why: `Looks like cm/s: use ${r(n / 100)} m/s?` };
+  if (f.unit === "cm/s" && n < 2.5) return { to: r(n * 100), why: `Looks like m/s: use ${r(n * 100)} cm/s?` };
+  return null;
+}
+
+/** Enter / Next on the keyboard moves to the next box in the form. */
+const nextField = (e: React.KeyboardEvent<HTMLElement>) => {
+  if (e.key !== "Enter") return;
+  e.preventDefault();
+  const all = Array.from(document.querySelectorAll<HTMLElement>("[data-entry]")).filter((el) => el.offsetParent !== null);
+  const i = all.indexOf(e.currentTarget);
+  const nxt = all[i + 1];
+  if (nxt) { nxt.focus(); nxt.scrollIntoView({ block: "center", behavior: "smooth" }); } else (e.currentTarget as HTMLElement).blur();
+};
+
+const FieldRow: React.FC<{ f: FieldDef; value: string; grade: ReturnType<typeof gradeField>; onTips: () => void }> = ({ f, value, grade, onTips }) => {
+  const hint = unitHint(f, value);
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2 mb-1.5 min-h-[24px]">
+        <label className="text-[13.5px] font-semibold text-[var(--c-text2)] leading-tight">{f.label}{f.unit ? <span className="font-normal text-[var(--c-muted)]"> ({f.unit})</span> : null}</label>
+        {f.caveats?.length ? <InfoButton label={f.label} onClick={onTips} /> : null}
+      </div>
+      {f.kind === "segments" ? (
+        <RwmaChart value={value} onChange={(x) => setValue(f.key, x)} />
+      ) : f.kind === "longtext" ? (
+        <textarea data-entry aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} placeholder={f.placeholder || ""} rows={4}
+          className={`${entryCls} min-h-[110px] leading-snug resize-y`} />
+      ) : useChips(f) ? (
+        <div role="radiogroup" aria-label={f.label} className="flex flex-wrap gap-2">
+          {f.options!.filter(Boolean).map((o) => {
+            const on = value === o;
+            return (
+              <button key={o} type="button" role="radio" aria-checked={on} onClick={() => setValue(f.key, on ? "" : o)}
+                className={`m3-press min-h-[44px] px-3.5 py-2 rounded-xl text-[14.5px] font-semibold border text-left leading-tight ${on ? "border-transparent bg-[var(--c-tonal)] text-[var(--c-on-tonal)]" : "border-[var(--c-border2)] text-[var(--c-text2)]"}`}>
+                {on ? "✓ " : ""}{o}
+              </button>
+            );
+          })}
+        </div>
+      ) : f.kind === "select" ? (
+        <select data-entry aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} className={entryCls}>
+          {f.options!.map((o) => <option key={o} value={o}>{o || "–"}</option>)}
+        </select>
+      ) : (
+        <input data-entry aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} onKeyDown={nextField} placeholder={f.placeholder || ""}
+          inputMode={f.kind === "num" ? "decimal" : "text"} enterKeyHint="next" className={entryCls} />
+      )}
+      {hint && (
+        <button type="button" onClick={() => setValue(f.key, hint.to)} className="mt-1.5 text-[12.5px] font-bold text-[var(--c-teal)] underline underline-offset-2">{hint.why}</button>
+      )}
+      {grade && <div className="mt-1.5"><GradeBadge g={grade} /></div>}
     </div>
-    {f.kind === "segments" ? (
-      <RwmaChart value={value} onChange={(x) => setValue(f.key, x)} />
-    ) : f.kind === "longtext" ? (
-      <textarea aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} placeholder={f.placeholder || ""} rows={4}
-        className={`${inputCls} min-h-[96px] py-2.5 leading-snug resize-y`} />
-    ) : f.kind === "select" ? (
-      <select aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} className={inputCls}>
-        {f.options!.map((o) => <option key={o} value={o}>{o || "–"}</option>)}
-      </select>
-    ) : (
-      <input aria-label={f.label} value={value} onChange={(e) => setValue(f.key, e.target.value)} placeholder={f.placeholder || ""}
-        inputMode={f.kind === "num" ? "decimal" : "text"} className={inputCls} />
-    )}
-    {grade && <div className="mt-1"><GradeBadge g={grade} /></div>}
-  </div>
-);
+  );
+};
+
+/** For "Mark rest normal": the normal answer for a select field, if it has one. */
+const NORMAL_RE = /^(Normal|None|No\b|No reversal|Present bilaterally|Not seen|Trileaflet, thin)/;
+const normalOption = (f: FieldDef) => (f.kind === "select" && f.section !== "context" ? (f.options || []).find((o) => NORMAL_RE.test(o)) : undefined);
 
 const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { draft, settings } = useData();
