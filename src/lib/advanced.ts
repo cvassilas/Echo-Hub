@@ -75,6 +75,7 @@ export const EXTRA_CAVEATS: Record<string, Caveat> = {
       "Off-axis or foreshortened views create false regional abnormalities, especially at the apex.",
       "Chart layout (bull's-eye, ASE/EACVI): outer ring basal 1–6, middle ring mid 7–12, inner ring apical 13–16, centre apex 17; anterior at the top, septum on the left, lateral on the right.",
       "Wall motion score: normal 1, hypokinetic 2, akinetic 3, dyskinetic (or aneurysmal) 4. Wall motion score index = sum ÷ segments scored; 1.0 is normal and higher means more extensive dysfunction. Segments marked 'not seen' are left out.",
+      "Apical views (tap them in the chart): A4C shows the inferoseptal (left) and anterolateral (right) walls, A2C the inferior and anterior walls, A3C the inferolateral and anteroseptal walls, each with its apical segments and the apex.",
       "Usual territories: LAD 1, 2, 7, 8, 13, 14, 17; RCA 3, 4, 9, 10, 15; LCx 5, 6, 11, 12, 16. Coronary anatomy varies, especially at the apex and inferolateral wall.",
     ],
   },
