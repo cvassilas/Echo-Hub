@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 jobs:
   build:
@@ -60,21 +61,30 @@ jobs:
           ./gradlew assembleRelease --no-daemon
           cp app/build/outputs/apk/release/app-release.apk ../EchoHub.apk
 
-      - name: Publish web app (iPhone / browser version)
+      - name: Publish web app (GitHub Pages, gh-pages branch)
         env:
+          GH_TOKEN: ${{ github.token }}
           T: ${{ secrets.APP_GH_TOKEN }}
         run: |
           # Separate build WITHOUT the GitHub token: this copy is public.
           VITE_GH_TOKEN= npx vite build --outDir web-dist --emptyOutDir
           if grep -rq "github_pat_\|ghp_" web-dist; then echo "::error::token found in web build"; exit 1; fi
-          T=$(printf '%s' "$T" | tr -d '[:space:]')
-          [ -z "$T" ] && { echo "::warning::APP_GH_TOKEN not set; web app not published"; exit 0; }
-          cd web-dist && touch .nojekyll
-          git init -q -b main && git add -A
+          cd web-dist && touch .nojekyll && cp index.html 404.html
+          git init -q -b gh-pages && git add -A
           git -c user.name="Echo Hub build" -c user.email="noreply@github.com" commit -qm "Web build ${GITHUB_SHA::7}"
-          git push -qf "https://x-access-token:${T}@github.com/cvassilas/echo-hub-web.git" main \
-            && echo "::notice::Web app published to cvassilas/echo-hub-web" \
-            || echo "::warning::Couldn't publish the web app. Create the public repo cvassilas/echo-hub-web and make sure APP_GH_TOKEN can write to it."
+          git push -qf "https://x-access-token:${GH_TOKEN}@github.com/${{ github.repository }}.git" gh-pages
+          echo "::notice::Web app pushed to the gh-pages branch"
+          # Switch GitHub Pages on (serving gh-pages) if it isn't already; needs a token with admin rights.
+          T=$(printf '%s' "$T" | tr -d '[:space:]')
+          for tok in "$T" "$GH_TOKEN"; do
+            [ -z "$tok" ] && continue
+            code=$(curl -s -o /tmp/p.json -w '%{http_code}' -H "Authorization: Bearer $tok" -H "Accept: application/vnd.github+json" "https://api.github.com/repos/${{ github.repository }}/pages")
+            if [ "$code" = "200" ]; then echo "::notice::GitHub Pages is on: https://cvassilas.github.io/Echo-Hub/"; break; fi
+            code=$(curl -s -o /tmp/p.json -w '%{http_code}' -X POST -H "Authorization: Bearer $tok" -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pages" -d '{"source":{"branch":"gh-pages","path":"/"}}')
+            if [ "$code" = "201" ]; then echo "::notice::GitHub Pages switched on: https://cvassilas.github.io/Echo-Hub/"; break; fi
+            echo "Pages enable attempt -> HTTP $code $(grep -o '"message": *"[^"]*"' /tmp/p.json | head -1)"
+          done
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

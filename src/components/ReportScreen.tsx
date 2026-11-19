@@ -348,7 +348,7 @@ const ReportView: React.FC<{ onClose: () => void }> = ({ onClose }) => {
         <button type="button" onClick={share} className="py-2.5 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><Share2 className="w-4 h-4" /> Share</button>
         <button type="button" onClick={() => pdf().catch((e) => alert(e?.message || "Couldn't make the PDF"))} className="py-2.5 rounded-full bg-[var(--c-teal)] text-[var(--c-on-primary)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><FileDown className="w-4 h-4" /> PDF</button>
       </div>
-      <button type="button" onClick={toLog} className="w-full py-2.5 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><BookPlus className="w-4 h-4" /> Add to Clinical Logs</button>
+      {Capacitor.isNativePlatform() && <button type="button" onClick={toLog} className="w-full py-2.5 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><BookPlus className="w-4 h-4" /> Add to Clinical Logs</button>}
       {logMsg && <p className="text-[11px] text-red-400">{logMsg}</p>}
       <p className="text-[10.5px] text-[var(--c-muted)]">You can edit the text before copying. Add patient identifiers only in the clinical record, not here.</p>
     </Sheet>

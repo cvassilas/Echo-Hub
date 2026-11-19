@@ -4,6 +4,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 import { useData, updateSettings, LinkedApp } from "../lib/store";
 import { appVersion, checkForUpdate, installUpdate, updatesEnabled, UpdateInfo } from "../lib/updates";
 import { card, inputCls, Sheet, SectionTitle } from "./ui";
+import { WebVersion } from "./WebVersion";
 
 interface AppLauncherPlugin {
   listApps(): Promise<{ apps: { packageName: string; label: string; system: boolean }[] }>;
@@ -124,6 +125,7 @@ export const MoreScreen: React.FC = () => {
           {msg && <p className="text-[11px] text-[var(--c-muted)]">{msg}</p>}
         </div>
       )}
+      <WebVersion />
       <div className={`${card} p-4 space-y-2`}>
         <SectionTitle>About</SectionTitle>
         <p className="text-[12px] leading-snug text-[var(--c-text2)]">Echo Hub is a teaching and reporting aid. Reference values are restated from BSE, ASE/EACVI, ESC/ERS and related guidelines; tips and diagrams were written for this app. It isn't a medical device: check measurements and conclusions against current guidelines and your own clinical judgement.</p>
