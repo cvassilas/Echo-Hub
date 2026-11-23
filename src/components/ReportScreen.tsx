@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown, BookPlus } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Copy, Share2, Save, FilePlus2, FolderOpen, Check, Trash2, FileDown, BookPlus, ScanLine } from "lucide-react";
 import { toLogEntry, sendToClinicalLogs } from "../lib/clinicalLogs";
 import { RwmaChart } from "./RwmaChart";
 import { Share } from "@capacitor/share";
@@ -8,6 +8,7 @@ import { FIELDS, SECTIONS, VIEW_SECTIONS, FIELD_VIEW, ViewId, SectionId, FieldDe
 import { useData, updateSettings, setValue, setDraft, newDraft, saveDraftAsReport, openReport, deleteReport } from "../lib/store";
 import { card, inputCls, GradeBadge, Sheet, CaveatList, InfoButton, LEVEL_COLOR } from "./ui";
 import { saveFile } from "../lib/saveFile";
+import { PhotoMeasure } from "./PhotoMeasure";
 
 const DERIVED_BY_SECTION: Partial<Record<SectionId, (keyof Derived)[]>> = {
   context: ["bsa"],
@@ -45,6 +46,7 @@ export const ReportScreen: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [showSaved, setShowSaved] = useState(false);
   const [savedMsg, setSavedMsg] = useState(false);
+  const [photo, setPhoto] = useState(false);
   const filled = Object.values(v).filter((x) => String(x || "").trim()).length;
   const ph = phProbability(v, d);
   const ds = diastology(v, d);
@@ -63,6 +65,7 @@ export const ReportScreen: React.FC = () => {
           </button>
           <button type="button" onClick={() => { if (!filled || confirm("Start a new study? Unsaved entries will be cleared.")) newDraft(); }} className="flex-1 py-2 rounded-full border border-[var(--c-border2)] text-[var(--c-teal)] m3-press text-xs font-bold flex items-center justify-center gap-1.5"><FilePlus2 className="w-4 h-4" /> New</button>
         </div>
+        <button type="button" onClick={() => setPhoto(true)} className="w-full py-2.5 rounded-full bg-[var(--c-tonal)] text-[var(--c-on-tonal)] m3-press text-[13px] font-bold flex items-center justify-center gap-1.5"><ScanLine className="w-4 h-4" /> Measure from a photo of the scanner screen</button>
       </div>
 
       <div className="flex items-center gap-2">
@@ -186,6 +189,7 @@ export const ReportScreen: React.FC = () => {
         </Sheet>
       )}
       {showReport && <ReportView onClose={() => setShowReport(false)} />}
+      {photo && <PhotoMeasure onClose={() => setPhoto(false)} />}
       {showSaved && (
         <Sheet title="Saved reports" onClose={() => setShowSaved(false)}>
           {reports.length === 0 && <p className="text-xs text-[var(--c-muted)]">Nothing saved yet. Reports stay on this phone.</p>}

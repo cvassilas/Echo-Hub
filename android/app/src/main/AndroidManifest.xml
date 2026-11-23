@@ -41,4 +41,7 @@
     <!-- Lets the Apps tab list and open your other echo apps -->
     <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- In-app camera for "Measure from a photo of the scanner screen" (images stay in memory) -->
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
 </manifest>
